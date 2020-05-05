@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block navbar_users %} active{% endblock %}
+
+{% block content %}
+	<div class="col-md-8">
+		<h1 class="my-3">Все пользователи</h1>
+		{% for user in users %}
+			<a href="{% url 'forum:user' user.id %}"><h3 class="my-3">{{ user.nickname }}</h3></a>
+		{% endfor %}
+		<ul class="pagination justify-content-center mb-4">
+			{% if users.has_previous %}
+				<li class="page-item">
+					{% if request.order %}
+						<a class="page-link" href="?order={{ request.order }}&page={{ users.previous_page_number }}">&larr; Предыдущие</a>
+					{% else %}
+						<a class="page-link" href="?page={{ users.previous_page_number }}">&larr; Предыдущие</a>
+					{% endif %}
+				</li>
+			{% else %}
+				<li class="page-item disabled">
+					<a class="page-link">&larr; Предыдущие</a>
+				</li>
+			{% endif %}
+			{% if users.has_next %}
+				<li class="page-item">
+					{% if request.order %}
+						<a class="page-link" href="?order={{ request.order }}&page={{ users.next_page_number }}">Следующие &rarr;</a>
+					{% else %}
+						<a class="page-link" href="?page={{ users.next_page_number }}">Следующие &rarr;</a>
+					{% endif %}
+				</li>
+			{% else %}
+				<li class="page-item disabled">
+					<a class="page-link">Следующие &rarr;</a>
+				</li>
+			{% endif %}
+		</ul>
+	</div>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+	<div class="col-md-8">
+		<h1 class="my-3">Задать вопрос</h1>
+		<div class="card">
+			<form method="post">
+				<div class="card-header">
+					<input class="form-control" maxlength="256" placeholder="Заголовок" required type="text">
+				</div>
+				<div class="card-body">
+					<div class="form-group">
+						<textarea class="form-control" placeholder="Текст вопроса" required rows="10"></textarea>
+					</div>
+					<input class="form-control" placeholder="Теги (через запятую)" required type="text">
+				</div>
+				<div class="card-header">
+					<button class="btn btn-primary" type="submit">Задать вопрос</button>
+				</div>
+			</form>
+		</div>
+	</div>
+{% endblock %}
+
+{% block script %}
+	<script src="{% static 'ask.js' %}" type="text/javascript"></script>
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block content %}
+	<div class="col-md-8">
+		<h3 class="mt-3">{{ question.get_title }}</h3>
+		<p class="mt-0 mb-2">{{ question.get_text }}</p>
+		<i class="mt-0 mb-0 text-secondary">
+			{% for question_tag in question.get_tags %}
+				&nbsp;#{{ question_tag.get_name }}
+			{% endfor %}
+		</i>
+		<hr>
+		<p class="mt-3 mb-3">
+			Задан {{ question.get_pub_date }} пользователем <a href="/user/{{ question.get_author.id }}">{{ question.get_author }}</a>
+		</p>
+		<hr>
+		{% for comment in question.get_comments %}
+			<div class="media mb-4">
+				<img class="d-flex mr-3 rounded-circle" src="http://placehold.it/50x50" alt="">
+				<div class="media-body">
+					<h5 class="mt-0"><a href="{% url 'forum:user' comment.get_author.id %}">{{ comment.get_author }}</a></h5>
+					{{ comment.get_text }}
+				</div>
+			</div>
+		{% endfor %}
+		<div class="card">
+			<h5 class="card-header">Оставить комментарий:</h5>
+			<div class="card-body">
+				<form method="post">
+					<div class="form-group">
+						<textarea class="form-control" rows="2"></textarea>
+					</div>
+					<button type="submit" class="btn btn-primary">Отправить</button>
+				</form>
+			</div>
+		</div>
+		<h3 class="mt-4">Ответы ({{ question.get_answers_count }})</h3>
+		{% for answer in question.get_answers %}
+			<div class="card mt-4 mb-4">
+				<div class="card-body">
+					<p class="card-text">{{ answer.get_text }}</p>
+				</div>
+				<div class="card-footer text-muted">Ответ дан {{ answer.get_pub_date }} пользователем <a href="/user/{{ answer.get_author.id }}">{{ answer.get_author }}</a></div>
+			</div>
+			{% for comment in answer.get_comments %}
+				<div class="media mb-4">
+					<img class="d-flex mr-3 rounded-circle" src="http://placehold.it/50x50" alt="">
+					<div class="media-body">
+						<h5 class="mt-0"><a href="{% url 'forum:user' comment.get_author.id %}">{{ comment.get_author }}</a></h5>
+						{{ comment.get_text }}
+					</div>
+				</div>
+			{% endfor %}
+			<hr>
+		{% endfor %}
+		<div class="card mt-5">
+			<h5 class="card-header">Ответить на вопрос:</h5>
+			<div class="card-body">
+				<form method="post">
+					<div class="form-group">
+						<textarea class="form-control" rows="5"></textarea>
+					</div>
+					<button type="submit" class="btn btn-primary">Отправить</button>
+				</form>
+			</div>
+		</div>
+	</div>
+{% endblock %}
