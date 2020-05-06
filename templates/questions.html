@@ -6,20 +6,20 @@
 		<form name="orderForm">
 			<label class="my-3" for="sortQuestions">Сортировать по:</label>
 			<select id="sortQuestions" name="order" type="submit">
-				{% if page_order == 'pub_date' %}
+				{% if request.GET.order == 'pub_date' %}
 					<option value="pub_date" selected>дате</option>
 				{% else %}
 					<option value="pub_date">дате</option>
 				{% endif %}
-				{% if page_order == 'title' %}
+				{% if request.GET.order == 'rating' %}
+					<option value="rating" selected>рейтингу</option>
+				{% else %}
+					<option value="rating">рейтингу</option>
+				{% endif %}
+				{% if request.GET.order == 'title' %}
 					<option value="title" selected>заголовку</option>
 				{% else %}
 					<option value="title">заголовку</option>
-				{% endif %}
-				{% if page_order == 'author' %}
-					<option value="author" selected>имени автора</option>
-				{% else %}
-					<option value="author">имени автора</option>
 				{% endif %}
 			</select>
 		</form>
@@ -30,7 +30,7 @@
 					<p class="card-text mb-1">{{ question.get_text_short }}</p>
 					<p class="mt-0 mb-2 text-secondary">
 						{% for question_tag in question.get_tags %}
-							#{{ question_tag.id }}&nbsp;
+							#{{ question_tag.name }}&nbsp;
 						{% endfor %}
 					</p>
 					<a class="btn btn-primary" href="{% url 'forum:question' question.id %}">Перейти &rarr;</a>
@@ -50,8 +50,8 @@
 		<ul class="pagination justify-content-center mb-4">
 			{% if questions.has_previous %}
 				<li class="page-item">
-					{% if request.order %}
-						<a class="page-link" href="?order={{ request.order }}&page={{ questions.previous_page_number }}">&larr; Предыдущие</a>
+					{% if request.GET.order %}
+						<a class="page-link" href="?order={{ request.GET.order }}&page={{ questions.previous_page_number }}">&larr; Предыдущие</a>
 					{% else %}
 						<a class="page-link" href="?page={{ questions.previous_page_number }}">&larr; Предыдущие</a>
 					{% endif %}
@@ -63,8 +63,8 @@
 			{% endif %}
 			{% if questions.has_next %}
 				<li class="page-item">
-					{% if request.order %}
-						<a class="page-link" href="?order={{ request.order }}&page={{ questions.next_page_number }}">Следующие &rarr;</a>
+					{% if request.GET.order %}
+						<a class="page-link" href="?order={{ request.GET.order }}&page={{ questions.next_page_number }}">Следующие &rarr;</a>
 					{% else %}
 						<a class="page-link" href="?page={{ questions.next_page_number }}">Следующие &rarr;</a>
 					{% endif %}

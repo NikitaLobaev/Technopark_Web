@@ -1,28 +1,34 @@
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
-from django.http import HttpResponseBadRequest, HttpResponseNotFound, HttpResponseRedirect
+from django.http import HttpResponseNotFound, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 
 from forum.exceptions import QuestionNotFound, QuestionTagNotFound
 from forum.models import Question, QuestionTag, Profile
 
+questions_per_page = 3
+users_per_page = 10
+
 
 def questions(request, questions_):
-	order = request.GET.get('order', Question.manager.accept_order[0])
+	order = request.GET.get('order')
 	page = request.GET.get('page', 1)
-	if not Question.manager.check_order(order):  # защита от злоумышленников
-		return HttpResponseBadRequest()
-	questions_ = questions_.order_by(order)
-	paginator = Paginator(questions_, 2)
+	if order in Question.manager.accept_order:
+		order = Question.manager.accept_order[order]
+	else:
+		order = Question.manager.accept_order[next(iter(Question.manager.accept_order))]
+	paginator = Paginator(questions_.order_by(order), questions_per_page)
 	try:
 		questions_ = paginator.page(page)
 	except PageNotAnInteger:
 		questions_ = paginator.page(1)
 	except EmptyPage:
 		questions_ = paginator.page(paginator.num_pages)
+	tags = QuestionTag.manager.all()
 	return render(request, 'index.html', {
 		'questions': questions_,
-		'tags': QuestionTag.manager.get_all()
+		'tags_left': tags[:int((len(tags) + 1) / 2)],
+		'tags_right': tags[int((len(tags) + 1) / 2):]
 	})
 
 
@@ -31,28 +37,28 @@ def index(request):
 
 
 def user(request, user_id):
+	tags = QuestionTag.manager.all()
 	return render(request, 'user.html', {
 		'user': Profile.manager.get_by_id(user_id),
-		'tags': QuestionTag.manager.get_all()
+		'tags_left': tags[:int((len(tags) + 1) / 2)],
+		'tags_right': tags[int((len(tags) + 1) / 2):]
 	})
 
 
 def users(request):
-	order = request.GET.get('order', Question.manager.accept_order[0])
 	page = request.GET.get('page', 1)
-	if not Profile.manager.check_order(order):  # защита от злоумышленников
-		return HttpResponseBadRequest()
-	profiles_ = Profile.manager.order_by(order)
-	paginator = Paginator(profiles_, 2)
+	paginator = Paginator(Profile.manager.all(), users_per_page)
 	try:
-		questions_ = paginator.page(page)
+		profiles = paginator.page(page)
 	except PageNotAnInteger:
-		questions_ = paginator.page(1)
+		profiles = paginator.page(1)
 	except EmptyPage:
-		questions_ = paginator.page(paginator.num_pages)
+		profiles = paginator.page(paginator.num_pages)
+	tags = QuestionTag.manager.all()
 	return render(request, 'users.html', {
-		'questions': questions_,
-		'tags': QuestionTag.manager.get_all()
+		'profiles': profiles,
+		'tags_left': tags[:int((len(tags) + 1) / 2)],
+		'tags_right': tags[int((len(tags) + 1) / 2):]
 	})
 
 
@@ -69,9 +75,11 @@ def question(request, question_id):
 		question_ = Question.manager.get_by_id(question_id)
 	except QuestionNotFound:
 		return HttpResponseNotFound()
+	tags = QuestionTag.manager.all()
 	return render(request, 'question.html', {
 		'question': question_,
-		'tags': QuestionTag.manager.get_all()
+		'tags_left': tags[:int((len(tags) + 1) / 2)],
+		'tags_right': tags[int((len(tags) + 1) / 2):]
 	})
 
 
