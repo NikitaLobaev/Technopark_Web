@@ -14,5 +14,5 @@ class Command(BaseCommand):
 		for i in range(0, int(options['count'])):
 			user = User.objects.create_user(username="User" + str(i), email="email" + str(i) + "@mail.ru",
 					password="abracadabra")
-			Profile.manager.create(user=user).save()
+			Profile.manager.create(user=user)
 		print("filldb_profiles: OK")

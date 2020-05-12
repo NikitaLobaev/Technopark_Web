@@ -17,7 +17,7 @@ class Command(BaseCommand):
 			answers_count = randrange(0, min(int(options['max_count']), len(profiles)))
 			for i in range(0, answers_count):
 				Answer.manager.create(question=question, author=profiles[i],
-						text="This is the answer to the question!").save()
+						text="This is the answer to the question!")
 			question.answers_count = answers_count
 			question.save()
 		print("filldb_answers: OK")

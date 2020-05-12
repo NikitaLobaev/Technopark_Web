@@ -21,7 +21,7 @@ class Command(BaseCommand):
 					rating = rating + 1
 				else:
 					rating = rating - 1
-				QuestionLikes.objects.create(question=question, author=profiles[i], like=like).save()
+				QuestionLikes.objects.create(question=question, author=profiles[i], like=like)
 			question.rating = rating
 			question.save()
 		print("filldb_questionlikes: OK")

@@ -16,5 +16,5 @@ class Command(BaseCommand):
 		for question in Question.manager.all():
 			for i in range(0, randrange(0, int(options['max_count']))):
 				CommentToQuestion.manager.create(author=profiles[randrange(0, len(profiles))], question=question,
-						text="This is the comment to the question.").save()
+						text="This is the comment to the question.")
 		print("filldb_commentstoquestion: OK")

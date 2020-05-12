@@ -1,42 +1,29 @@
 from django.contrib.auth.models import User
-from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.utils.timezone import now
 
-from forum.exceptions import QuestionTagNotFound, QuestionNotFound, AnswerNotFound, ProfileNotFound
-
 
 class ProfileManager(models.Manager):
-	def get_by_id(self, profile_id):
-		try:
-			return self.get(id=profile_id)
-		except ObjectDoesNotExist:
-			raise ProfileNotFound()
+	pass
 
 
 class Profile(models.Model):
 	manager = ProfileManager()
 	user = models.ForeignKey(User, on_delete=models.CASCADE)
 	
+	class Meta:
+		ordering = ['user__username']
+	
 	def get_user(self):
 		return self.user
 	
 	def get_nickname(self):
 		return self.get_user().username
-	
-	class Meta:
-		ordering = ['user__username']
 
 
 class QuestionTagManager(models.Manager):
 	def get_by_name(self, name):
-		try:
-			return self.get(name=name)
-		except ObjectDoesNotExist:
-			raise QuestionTagNotFound()
-	
-	class Meta:
-		ordering = ['name']
+		return self.get(name=name)
 
 
 class QuestionTag(models.Model):
@@ -44,7 +31,10 @@ class QuestionTag(models.Model):
 	name = models.CharField('name', max_length=32, primary_key=True)
 	description = models.TextField('description')
 	
-	def get_name(self):
+	class Meta:
+		ordering = ['name']
+	
+	def __str__(self):
 		return self.name
 	
 	def get_description(self):
@@ -54,16 +44,13 @@ class QuestionTag(models.Model):
 class QuestionManager(models.Manager):
 	accept_order = {'pub_date': '-pub_date', 'rating': '-rating', 'title': 'title'}
 	
-	def get_by_id(self, question_id):
-		try:
-			return self.get(id=question_id)
-		except ObjectDoesNotExist:
-			raise QuestionNotFound()
+	class Meta:
+		ordering = ['name']
 	
-	def get_hot_questions(self):
+	def get_hot(self):
 		return self.filter(rating__gte=10).order_by(self.accept_order['rating'])
 	
-	def get_tag_questions(self, tag_name):
+	def get_by_tag(self, tag_name):
 		return self.filter(tags__exact=QuestionTag.manager.get_by_name(tag_name))
 
 
@@ -143,27 +130,24 @@ class CommentToQuestion(models.Model):
 	text = models.CharField('text', max_length=256)
 	pub_date = models.DateTimeField('pub_date', default=now, blank=True)
 	
+	class Meta:
+		ordering = ['-pub_date']
+	
+	def __str__(self):
+		return self.text
+	
 	def get_author(self):
 		return self.author
 	
-	def get_text(self):
-		return self.text
-	
 	def get_pub_date(self):
 		return self.pub_date
-	
-	class Meta:
-		ordering = ['-pub_date']
 
 
 class AnswerManager(models.Manager):
 	accept_order = {'pub_date': '-pub_date', 'rating': '-rating'}
 	
 	def get_by_id(self, answer_id):
-		try:
-			return self.get(id=answer_id)
-		except ObjectDoesNotExist:
-			raise AnswerNotFound()
+		return self.get(id=answer_id)
 	
 	def get_by_question(self, question):
 		return self.filter(question=question)
@@ -177,11 +161,11 @@ class Answer(models.Model):
 	pub_date = models.DateTimeField('pub_date', default=now, blank=True)
 	rating = models.IntegerField('rating', default=0)
 	
+	def __str__(self):
+		return self.text
+	
 	def get_author(self):
 		return self.author
-	
-	def get_text(self):
-		return self.text
 	
 	def get_pub_date(self):
 		return self.pub_date
@@ -217,14 +201,14 @@ class CommentToAnswer(models.Model):
 	text = models.CharField('text', max_length=256)
 	pub_date = models.DateTimeField('pub_date', default=now, blank=True)
 	
+	class Meta:
+		ordering = ['-pub_date']
+	
+	def __str__(self):
+		return self.text
+	
 	def get_author(self):
 		return self.author
 	
-	def get_text(self):
-		return self.text
-	
 	def get_pub_date(self):
 		return self.pub_date
-	
-	class Meta:
-		ordering = ['-pub_date']

@@ -64,19 +64,23 @@
 					<div class="row">
 						<div class="col-lg-6">
 							<ul class="list-unstyled mb-0">
-								{% for tag in tags_left %}
+								{% for tag in tags %}
+									{% if not forloop.counter|divisibleby:2 %}
 									<li>
-										<a href="{% url 'forum:tag' tag.get_name %}">{{ tag.get_name }}</a>
+										<a href="{% url 'forum:tag' tag %}">{{ tag }}</a>
 									</li>
+									{% endif %}
 								{% endfor %}
 							</ul>
 						</div>
 						<div class="col-lg-6">
 							<ul class="list-unstyled mb-0">
-								{% for tag in tags_right %}
+								{% for tag in tags %}
+									{% if forloop.counter|divisibleby:2 %}
 									<li>
-										<a href="{% url 'forum:tag' tag.get_name %}">{{ tag.get_name }}</a>
+										<a href="{% url 'forum:tag' tag %}">{{ tag }}</a>
 									</li>
+									{% endif %}
 								{% endfor %}
 							</ul>
 						</div>
