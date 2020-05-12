@@ -1,6 +1,6 @@
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.http import HttpResponseNotFound, HttpResponseRedirect
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render
 from django.urls import reverse
 from django.views.decorators.http import require_GET
 
@@ -11,18 +11,19 @@ questions_per_page = 3
 users_per_page = 10
 
 
-def questions_pagination(request, questions_):
-	try:  # TODO: может быть, добавить limit на количество вопросов на странице
-		order = Question.manager.accept_order[request.GET.get('order', next(iter(Question.manager.accept_order)))]
-		paginator = Paginator(questions_.order_by(order), questions_per_page)
-	except (KeyError, PageNotAnInteger):
-		return HttpResponseNotFound()  # TODO: maybe raise Http404 instead?
+def questions_pagination(request, questions_):  # TODO: может быть, добавить limit на количество вопросов на странице
+	order = request.GET.get('order')
+	if order in Question.manager.accept_order:
+		questions_ = questions_.order_by(order)
+	paginator = Paginator(questions_, questions_per_page)
 	try:
-		questions_ = paginator.page(request.GET.get('page', 1))
+		page = paginator.page(request.GET.get('page', 1))
+	except PageNotAnInteger:
+		return HttpResponseNotFound()
 	except EmptyPage:
-		questions_ = paginator.page(paginator.num_pages)
+		page = paginator.page(paginator.num_pages)
 	return render(request, 'index.html', {
-		'questions': questions_,
+		'questions': page,
 		'tags': QuestionTag.manager.all()
 	})
 
@@ -32,20 +33,23 @@ def index(request):
 
 
 @require_GET
-def user(request, user_id):
+def user(request, user_id):  # TODO: maybe rename "user" to "profile" everywhere
+	try:
+		profile_ = Profile.manager.get_by_id(user_id)
+	except Question.DoesNotExist:
+		return HttpResponseNotFound()
 	return render(request, 'user.html', {
-		'user': get_object_or_404(Profile, id=user_id),
+		'user': profile_,  # TODO: think about get_object_or_404(Profile, id=user_id) EVERYWHERE
 		'tags': QuestionTag.manager.all()
 	})
 
 
 def users(request):
-	page = request.GET.get('page', 1)
 	paginator = Paginator(Profile.manager.all(), users_per_page)
 	try:
-		profiles = paginator.page(page)
+		profiles = paginator.page(request.GET.get('page', 1))
 	except PageNotAnInteger:
-		profiles = paginator.page(1)
+		return HttpResponseNotFound()
 	except EmptyPage:
 		profiles = paginator.page(paginator.num_pages)
 	return render(request, 'users.html', {
@@ -58,7 +62,7 @@ def ask(request):
 	if request.user.is_authenticated:  # TODO: if not!!!
 		return HttpResponseRedirect(reverse('forum:login'))
 	return render(request, 'ask.html', {
-		'tags': QuestionTag.manager.get_all()
+		'tags': QuestionTag.manager.all()
 	})
 
 
@@ -79,7 +83,7 @@ def hot(request):
 
 def tag(request, tag_name):
 	try:
-		questions_ = Question.manager.get_by_tag(tag_name)
+		tag_ = QuestionTag.manager.get_by_name(tag_name)
 	except QuestionTag.DoesNotExist:
 		return HttpResponseNotFound()
-	return questions_pagination(request, questions_)
+	return questions_pagination(request, Question.manager.get_by_tag(tag_))

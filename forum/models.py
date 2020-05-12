@@ -44,14 +44,14 @@ class QuestionTag(models.Model):
 class QuestionManager(models.Manager):
 	accept_order = {'pub_date': '-pub_date', 'rating': '-rating', 'title': 'title'}
 	
-	class Meta:
-		ordering = ['name']
+	def get_by_id(self, question_id):
+		return self.get(id=question_id)
 	
 	def get_hot(self):
 		return self.filter(rating__gte=10).order_by(self.accept_order['rating'])
 	
-	def get_by_tag(self, tag_name):
-		return self.filter(tags__exact=QuestionTag.manager.get_by_name(tag_name))
+	def get_by_tag(self, tag):
+		return self.filter(tags__exact=tag)
 
 
 class Question(models.Model):
@@ -63,6 +63,9 @@ class Question(models.Model):
 	pub_date = models.DateTimeField('pub_date', default=now, blank=True)
 	answers_count = models.IntegerField('answers_count', default=0)
 	rating = models.IntegerField('rating', default=0)
+	
+	class Meta:
+		ordering = ['pub_date']
 	
 	def get_author(self):
 		return self.author
