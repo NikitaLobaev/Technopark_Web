@@ -1,9 +1,11 @@
+from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.http import HttpResponseNotFound, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 from django.views.decorators.http import require_GET
 
+from forum.forms import AskQuestionForm
 from forum.models import Question, QuestionTag, Profile
 
 # TODO: optimize and sort ALL imports EVERYWHERE!
@@ -11,6 +13,7 @@ questions_per_page = 3
 users_per_page = 10
 
 
+@require_GET
 def questions_pagination(request, questions_):  # TODO: может быть, добавить limit на количество вопросов на странице
 	order = request.GET.get('order')
 	if order in Question.manager.accept_order:
@@ -28,8 +31,9 @@ def questions_pagination(request, questions_):  # TODO: может быть, д�
 	})
 
 
+@require_GET
 def index(request):
-	return questions_pagination(request, Question.manager)
+	return questions_pagination(request, Question.manager.all())
 
 
 @require_GET
@@ -44,6 +48,7 @@ def user(request, user_id):  # TODO: maybe rename "user" to "profile" everywhere
 	})
 
 
+@require_GET
 def users(request):
 	paginator = Paginator(Profile.manager.all(), users_per_page)
 	try:
@@ -58,10 +63,15 @@ def users(request):
 	})
 
 
+# TODO: @require_POST ???
+@login_required
 def ask(request):
-	if request.user.is_authenticated:  # TODO: if not!!!
-		return HttpResponseRedirect(reverse('forum:login'))
+	form = AskQuestionForm(request.user, request.POST)
+	if form.is_valid():
+		question_ = form.save()
+		return HttpResponseRedirect(reverse('forum:question', args=question_.id))
 	return render(request, 'ask.html', {
+		'form': form,
 		'tags': QuestionTag.manager.all()
 	})
 
@@ -77,10 +87,12 @@ def question(request, question_id):
 	})
 
 
+@require_GET
 def hot(request):
 	return questions_pagination(request, Question.manager.get_hot())
 
 
+@require_GET
 def tag(request, tag_name):
 	try:
 		tag_ = QuestionTag.manager.get_by_name(tag_name)

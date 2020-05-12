@@ -44,7 +44,7 @@
 						{% endif %}
 					</i>
 				</div>
-				<div class="card-footer text-muted">Задан {{ question.get_pub_date }} пользователем <a href="/user/{{ question.get_author.id }}">{{ question.get_author }}</a></div>
+				<div class="card-footer text-muted">Задан {{ question.get_pub_date }} пользователем <a href="/user/{{ question.get_author.get_id }}">{{ question.get_author }}</a></div>
 			</div>
 		{% endfor %}
 		<ul class="pagination justify-content-center mb-4">

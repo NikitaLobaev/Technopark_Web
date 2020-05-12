@@ -7,7 +7,7 @@ SECRET_KEY = 't=znvrz0yynq8=v)33&6dwl13pv5f=%%&a-l^oxdj34_qi(6xd'
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
+# TODO: посмотреть все поля настроек в документации. установить дополнительные нужные поля
 INSTALLED_APPS = [
 	'django.contrib.admin',
 	'django.contrib.auth',
@@ -83,6 +83,10 @@ USE_L10N = True
 USE_TZ = True
 
 STATIC_URL = '/static/'
+
+LOGIN_REDIRECT_URL = '/profile'
+
+LOGIN_URL = '/login'
 
 STATICFILES_DIRS = [
 	os.path.join(BASE_DIR, 'static')

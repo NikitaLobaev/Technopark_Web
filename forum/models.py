@@ -4,7 +4,8 @@ from django.utils.timezone import now
 
 
 class ProfileManager(models.Manager):
-	pass
+	def get_by_id(self, profile_id):
+		return self.filter(id=profile_id)
 
 
 class Profile(models.Model):
@@ -13,6 +14,12 @@ class Profile(models.Model):
 	
 	class Meta:
 		ordering = ['user__username']
+	
+	def __str__(self):
+		return self.user.username
+	
+	def get_id(self):
+		return self.id
 	
 	def get_user(self):
 		return self.user
