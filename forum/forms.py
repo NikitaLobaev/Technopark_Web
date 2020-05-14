@@ -1,31 +1,31 @@
 from django import forms
 
-from forum.models import Question
+from forum.models import Question, User
 
 
-class LoginForm(forms.Form):
-	username = forms.CharField()
-	password = forms.CharField(widget=forms.PasswordInput)
+class AuthForm(forms.ModelForm):
+	username = forms.CharField(max_length=30, label='Логин')
 	
-	def clean_username(self):
-		username = self.cleaned_data['username']
-		if ' ' in username:
-			self.add_error('username', 'No whitespaces allowed in username!')
-		return username
+	class Meta:
+		abstract = True
 
 
-class AskQuestionForm(forms.Form):
-	title = forms.CharField(max_length=256)
-	text = forms.CharField(widget=forms.Textarea)
-	# tags = forms.ManyToManyField(QuestionTag)
+class SignupForm(forms.ModelForm):
 	
-	def __init__(self, author, **kwargs):
-		self._author = author
-		super(AskQuestionForm, self).__init__(**kwargs)
+	class Meta:
+		model = User
+		fields = ['username', 'password', 'email', 'first_name', 'last_name']
+
+
+class LoginForm(forms.ModelForm):
+	username = forms.CharField(max_length=30, label='Логин')
 	
-	def clean(self):
-		pass
-	
-	def save(self):
-		self.cleaned_data['author'] = self._author
-		return Question.manager.create(**self.cleaned_data)
+	class Meta:
+		model = User
+		fields = ['username', 'password']
+
+
+class AskQuestionForm(forms.ModelForm):
+	class Meta:
+		model = Question
+		fields = ['author', 'title', 'text', 'tags', ]

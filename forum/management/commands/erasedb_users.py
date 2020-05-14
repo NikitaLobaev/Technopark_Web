@@ -7,4 +7,4 @@ class Command(BaseCommand):
 	
 	def handle(self, *args, **options):
 		User.objects.all().delete()
-		print("erasedb_profiles: OK")
+		print('erasedb_users: OK')

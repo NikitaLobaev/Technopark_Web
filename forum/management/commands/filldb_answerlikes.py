@@ -2,7 +2,7 @@ from random import randrange
 
 from django.core.management.base import BaseCommand
 
-from forum.models import Profile, Answer, AnswerLikes
+from forum.models import User, Answer, AnswerLike
 
 
 class Command(BaseCommand):
@@ -12,16 +12,16 @@ class Command(BaseCommand):
 		parser.add_argument('max_count', type=int)
 	
 	def handle(self, *args, **options):
-		profiles = Profile.manager.all()
-		for answer in Answer.manager.all():
+		users = User.objects.all()
+		for answer in Answer.objects.all():
 			rating = 0
-			for i in range(0, randrange(0, min(len(profiles), int(options['max_count'])))):
+			for i in range(0, randrange(0, min(len(users), int(options['max_count'])))):
 				like = randrange(0, 2) == 1
 				if like:
 					rating = rating + 1
 				else:
 					rating = rating - 1
-				AnswerLikes.objects.create(answer=answer, author=profiles[i], like=like)
+				AnswerLike.objects.create(answer=answer, author=users[i], like=like)
 			answer.rating = rating
 			answer.save()
-		print("filldb_answerlikes: OK")
+		print('filldb_answerlikes: OK')

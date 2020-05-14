@@ -7,5 +7,5 @@ class Command(BaseCommand):
 	
 	def handle(self, *args, **options):
 		call_command('erasedb_questiontags')
-		call_command('erasedb_profiles')
+		call_command('erasedb_users')
 		print("erasedb: OK")

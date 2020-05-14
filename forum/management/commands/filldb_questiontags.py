@@ -11,6 +11,5 @@ class Command(BaseCommand):
 	
 	def handle(self, *args, **options):
 		for i in range(0, int(options['count'])):
-			QuestionTag.manager.create(name="Tag" + str(i),
-					description="This it description of tag number " + str(i))
-		print("filldb_questiontags: OK")
+			QuestionTag.objects.create(name='Tag' + str(i), description='This it description of tag number ' + str(i))
+		print('filldb_questiontags: OK')

@@ -38,17 +38,18 @@
 		{% block content %}{% endblock %}
 		<div class="col-md-4">
 			<div class="card my-4">
-				{% if auth %}
-					{% comment %}...{% endcomment %}
+				{% if request.user.is_authenticated %}
+					<h5 class="card-header"><a href="{% url 'forum:profile_edit' %}">{{ request.user.username }}</a></h5>
 				{% else %}
-					<h5 class="card-header">VK</h5>
+					<h5 class="card-header"><a href="{% url 'forum:login' %}">Вход в аккаунт</a></h5>
+					<h5 class="card-header"><a href="{% url 'forum:signup' %}">Регистрация</a></h5>
 				{% endif %}
 			</div>
 			<div class="card my-4">
 				<h5 class="card-header">Поиск вопросов</h5>
 				<div class="card-body">
 					<div class="input-group">
-						<input type="text" class="form-control" placeholder="Содержание...">
+						<input type="text" class="form-control" placeholder="Содержание ...">
 						<span class="input-group-btn">
 							<button class="btn btn-secondary" type="button">Искать</button>
 						</span>

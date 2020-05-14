@@ -3,7 +3,7 @@
 
 {% block content %}
 	<div class="col-md-8">
-		<h3 class="my-3">Пользователь <b>{{ user.nickname }}</b></h3>
-		<img alt="avatar" class="avatar" src="http://placehold.it/200x200">
+		<h3 class="my-3">Пользователь <b>{{ user.username }}</b></h3>
+		<img alt="avatar" class="avatar" src="{{ user.avatar }}">
 	</div>
 {% endblock %}

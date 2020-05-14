@@ -7,5 +7,5 @@ class Command(BaseCommand):
 	help = 'Очистка БД: комментарии к ответам'
 	
 	def handle(self, *args, **options):
-		CommentToAnswer.manager.all().delete()
-		print("erasedb_commentstoanswer: OK")
+		CommentToAnswer.objects.all().delete()
+		print('erasedb_commentstoanswer: OK')

@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 
-from forum.models import Profile
+from forum.models import User
 
 
 class Command(BaseCommand):
@@ -12,7 +12,8 @@ class Command(BaseCommand):
 	
 	def handle(self, *args, **options):
 		for i in range(0, int(options['count'])):
-			user = User.objects.create_user(username="User" + str(i), email="email" + str(i) + "@mail.ru",
-					password="abracadabra")
-			Profile.manager.create(user=user)
-		print("filldb_profiles: OK")
+			user = User.objects.create_user('User' + str(i), 'email' + str(i) + '@mail.ru', 'abracadabra')
+			user.first_name = 'User' + str(i) + ' first name'
+			user.last_name = 'User' + str(i) + ' last name'
+			user.save()
+		print('filldb_users: OK')

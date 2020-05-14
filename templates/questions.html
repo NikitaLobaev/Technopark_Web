@@ -2,7 +2,7 @@
 {% load static %}
 {% block content %}
 	<div class="col-md-8">
-		<h1 class="my-3">{% block content_header %}{% endblock %}</h1>
+		<h1 class="my-3">{% block content_header %}Главная страница. Вопросы{% endblock %}</h1>
 		<form name="orderForm">
 			<label class="my-3" for="sortQuestions">Сортировать по:</label>
 			<select id="sortQuestions" name="order" type="submit">
@@ -29,22 +29,22 @@
 					<a href="{% url 'forum:question' question.id %}"><h2 class="card-title">{{ question.get_title_short }}</h2></a>
 					<p class="card-text mb-1">{{ question.get_text_short }}</p>
 					<p class="mt-0 mb-2 text-secondary">
-						{% for question_tag in question.get_tags %}
-							#{{ question_tag.name }}&nbsp;
+						{% for question_tag in question.tags.all %}
+							#{{ question_tag }}&nbsp;
 						{% endfor %}
 					</p>
 					<a class="btn btn-primary" href="{% url 'forum:question' question.id %}">Перейти &rarr;</a>
-					<i style="float: right">Ответов: <b>{{ question.get_answers_count }}</b>&nbsp;&nbsp;&nbsp;Рейтинг:
-						{% if question.get_rating > 0 %}
-							<b class="text-success">+{{ question.get_rating }}</b>
-						{% elif question.get_rating < 0 %}
-							<b class="text-danger">{{ question.get_rating }}</b>
+					<i style="float: right">Ответов: <b>{{ question.answers_count }}</b>&nbsp;&nbsp;&nbsp;Рейтинг:
+						{% if question.rating > 0 %}
+							<b class="text-success">+{{ question.rating }}</b>
+						{% elif question.rating < 0 %}
+							<b class="text-danger">{{ question.rating }}</b>
 						{% else %}
 							<b>0</b>
 						{% endif %}
 					</i>
 				</div>
-				<div class="card-footer text-muted">Задан {{ question.get_pub_date }} пользователем <a href="/user/{{ question.get_author.get_id }}">{{ question.get_author }}</a></div>
+				<div class="card-footer text-muted">Задан {{ question.pub_date }} пользователем <a href="{% url 'forum:user' question.author.id %}">{{ question.author }}</a></div>
 			</div>
 		{% endfor %}
 		<ul class="pagination justify-content-center mb-4">

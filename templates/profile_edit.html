@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+	<div class="col-md-8">
+		<h3 class="my-3">Пользователь <b>{{ request.user }}</b></h3>
+		<img alt="avatar" class="avatar" src="{{ request.user.avatar }}">
+		<br>
+		<br>
+		<a class="btn btn-primary" href="{% url 'forum:logout' %}">Выйти из аккаунта</a>
+	</div>
+{% endblock %}

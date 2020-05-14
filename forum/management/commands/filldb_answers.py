@@ -1,23 +1,23 @@
+import random
 from random import randrange
 
 from django.core.management.base import BaseCommand
 
-from forum.models import Profile, Question, Answer
+from forum.models import User, Question, Answer
 
 
 class Command(BaseCommand):
 	help = 'Заполнение БД: ответы'
 	
 	def add_arguments(self, parser):
-		parser.add_argument('max_count', type=int)
+		parser.add_argument('max_count', type=int)  # максимальное количество ответов на каждый вопрос
 	
 	def handle(self, *args, **options):
-		profiles = Profile.manager.all()
-		for question in Question.manager.all():
-			answers_count = randrange(0, min(int(options['max_count']), len(profiles)))
-			for i in range(0, answers_count):
-				Answer.manager.create(question=question, author=profiles[i],
-						text="This is the answer to the question!")
+		users = User.objects.all()
+		for question in Question.objects.all():
+			answers_count = randrange(0, 1 + min(int(options['max_count']), len(users)))
+			for i in random.sample(range(len(users)), answers_count):
+				Answer.objects.create(question=question, author=users[i], text='This is the answer to the question!')
 			question.answers_count = answers_count
 			question.save()
-		print("filldb_answers: OK")
+		print('filldb_answers: OK')
