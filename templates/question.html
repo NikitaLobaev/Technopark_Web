@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
-
+{% load static %}
+{% block title %}{{ block.super }}. Вопрос{% endblock %}
 {% block content %}
 	<div class="col-md-8">
 		<h3 class="mt-3">{{ question.title }}</h3>
@@ -11,12 +12,12 @@
 		</i>
 		<hr>
 		<p class="mt-3 mb-3">
-			Задан {{ question.pub_date }} пользователем <a href="/user/{{ question.author.id }}">{{ question.author }}</a>
+			Задан {{ question.pub_date }} пользователем <a href="{% url 'forum:user' question.author.id %}">{{ question.author }}</a>
 		</p>
 		<hr>
 		{% for comment in question.get_comments %}
 			<div class="media mb-4">
-				<img class="d-flex mr-3 rounded-circle" src="{{ comment.author.avatar }}" alt="Аватар пользователя">
+				<img class="d-flex mr-3 rounded-circle" src="{{ comment }}" alt="Аватар пользователя">
 				<div class="media-body">
 					<h5 class="mt-0"><a href="{% url 'forum:user' comment.author.id %}">{{ comment.author }}</a></h5>
 					{{ comment }}
@@ -44,7 +45,7 @@
 			</div>
 			{% for comment in answer.get_comments %}
 				<div class="media mb-4">
-					<img class="d-flex mr-3 rounded-circle" src="{{ comment.avatar }}" alt="Аватар пользователя">
+					<img class="d-flex mr-3 rounded-circle" src="{{ comment.avatar.url }}" alt="Аватар пользователя">
 					<div class="media-body">
 						<h5 class="mt-0"><a href="{% url 'forum:user' comment.author.id %}">{{ comment.author }}</a></h5>
 						{{ comment }}

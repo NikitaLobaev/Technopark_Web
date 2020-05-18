@@ -12,7 +12,7 @@ class User(AbstractUser):
 	objects = MyUserManager()
 	username = models.CharField(max_length=30, unique=True)
 	email = models.EmailField(unique=True)
-	avatar = models.ImageField(upload_to='avatar', default='/static/avatars/default.png')
+	avatar = models.ImageField(default='/media/avatar/default.png')
 	
 	class Meta:
 		ordering = ['username']
@@ -101,7 +101,6 @@ class Answer(models.Model):
 
 
 class Like(models.Model):
-	question = models.ForeignKey(Question, on_delete=models.CASCADE)
 	author = models.ForeignKey(User, on_delete=models.CASCADE)
 	like = models.BooleanField('like', default=True)
 	

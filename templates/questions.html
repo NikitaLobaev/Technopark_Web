@@ -1,27 +1,32 @@
 {% extends 'base.html' %}
 {% load static %}
+{% comment %}{% block questions_pagination_form_buttons %}
+{% endblock %}{% endcomment %}
 {% block content %}
 	<div class="col-md-8">
-		<h1 class="my-3">{% block content_header %}Главная страница. Вопросы{% endblock %}</h1>
-		<form name="orderForm">
-			<label class="my-3" for="sortQuestions">Сортировать по:</label>
-			<select id="sortQuestions" name="order" type="submit">
-				{% if request.GET.order == 'pub_date' %}
-					<option value="pub_date" selected>дате</option>
-				{% else %}
-					<option value="pub_date">дате</option>
-				{% endif %}
-				{% if request.GET.order == 'rating' %}
-					<option value="rating" selected>рейтингу</option>
-				{% else %}
-					<option value="rating">рейтингу</option>
-				{% endif %}
-				{% if request.GET.order == 'title' %}
-					<option value="title" selected>заголовку</option>
-				{% else %}
-					<option value="title">заголовку</option>
-				{% endif %}
-			</select>
+		<h1 class="my-3">{% block content_header %}{% endblock %}</h1>
+		<form class="form-horizontal" name="questions_pagination_form">
+			{{ questions_pagination_form.as_p }}
+			<ul class="pagination justify-content-center mb-4">
+			{% if questions.has_previous %}
+				<li class="page-item">
+					<button class="page-link" onclick="questions_pagination_form_submit({{ questions.previous_page_number }})">&larr; Предыдущие</button>
+				</li>
+			{% else %}
+				<li class="page-item disabled">
+					<button class="page-link">&larr; Предыдущие</button>
+				</li>
+			{% endif %}
+			{% if questions.has_next %}
+				<li class="page-item">
+					<button class="page-link" onclick="questions_pagination_form_submit({{ questions.next_page_number }})">Следующие &rarr;</button>
+				</li>
+			{% else %}
+				<li class="page-item disabled">
+					<button class="page-link">Следующие &rarr;</button>
+				</li>
+			{% endif %}
+			</ul>
 		</form>
 		{% for question in questions %}
 			<div class="card mb-4">
@@ -50,28 +55,20 @@
 		<ul class="pagination justify-content-center mb-4">
 			{% if questions.has_previous %}
 				<li class="page-item">
-					{% if request.GET.order %}
-						<a class="page-link" href="?order={{ request.GET.order }}&page={{ questions.previous_page_number }}">&larr; Предыдущие</a>
-					{% else %}
-						<a class="page-link" href="?page={{ questions.previous_page_number }}">&larr; Предыдущие</a>
-					{% endif %}
+					<button class="page-link" onclick="questions_pagination_form_submit({{ questions.previous_page_number }})">&larr; Предыдущие</button>
 				</li>
 			{% else %}
 				<li class="page-item disabled">
-					<a class="page-link">&larr; Предыдущие</a>
+					<button class="page-link">&larr; Предыдущие</button>
 				</li>
 			{% endif %}
 			{% if questions.has_next %}
 				<li class="page-item">
-					{% if request.GET.order %}
-						<a class="page-link" href="?order={{ request.GET.order }}&page={{ questions.next_page_number }}">Следующие &rarr;</a>
-					{% else %}
-						<a class="page-link" href="?page={{ questions.next_page_number }}">Следующие &rarr;</a>
-					{% endif %}
+					<button class="page-link" onclick="questions_pagination_form_submit({{ questions.next_page_number }})">Следующие &rarr;</button>
 				</li>
 			{% else %}
 				<li class="page-item disabled">
-					<a class="page-link">Следующие &rarr;</a>
+					<button class="page-link">Следующие &rarr;</button>
 				</li>
 			{% endif %}
 		</ul>

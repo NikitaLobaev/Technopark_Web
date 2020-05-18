@@ -6,11 +6,10 @@ from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from django.views.decorators.http import require_GET
 
-from forum.forms import AskQuestionForm, SignupForm, LoginForm
+from forum.forms import AskQuestionForm, SignupForm, LoginForm, EditAvatarForm, QuestionsPaginationForm
 from forum.models import Question, QuestionTag, User
 
 # TODO: optimize and sort ALL imports EVERYWHERE!
-questions_per_page = 5
 users_per_page = 10
 hot_questions_min_rating = 10
 
@@ -20,24 +19,31 @@ def render_with_tags(request, template_name, context):
 	return render(request, template_name, context)
 
 
-@require_GET  # TODO: может быть, добавить limit на количество вопросов на странице
+@require_GET
 def render_questions(request, template_name, context):
-	order = request.GET.get('order')
-	if order in Question.objects.accept_order:
-		context['questions'] = context['questions'].order_by(Question.objects.accept_order[order])
-	paginator = Paginator(context['questions'], questions_per_page)
+	questions_pagination_form = QuestionsPaginationForm(request.GET)
+	questions = context['questions']
+	if questions_pagination_form.is_valid():
+		paginator = Paginator(
+			questions.order_by(questions_pagination_form.cleaned_data['order']),
+			questions_pagination_form.cleaned_data['limit'])
+		page = questions_pagination_form.cleaned_data['page']
+	else:
+		paginator = Paginator(questions, 10)
+		page = 1
 	try:
-		context['questions'] = paginator.page(request.GET.get('page', 1))
+		context['questions'] = paginator.page(page)
 	except PageNotAnInteger:
 		return HttpResponseNotFound()
 	except EmptyPage:
 		context['questions'] = paginator.page(paginator.num_pages)
+	context['questions_pagination_form'] = questions_pagination_form
 	return render_with_tags(request, template_name, context)
 
 
 @require_GET
 def index(request):
-	return render_questions(request, 'questions.html', {
+	return render_questions(request, 'index.html', {
 		'questions': Question.objects.all()
 	})
 
@@ -80,17 +86,14 @@ def login_(request):  # TODO: captcha EVERYWHERE if it needs!
 
 
 @login_required
-def profile_edit(request):
+def profile(request):
 	if request.method == 'POST':
-		form = SignupForm(request.POST)
+		form = EditAvatarForm(request.POST)
 		if form.is_valid():
-			user_ = form.save()
-			User.objects.create(user=user_)
-			login(request, user_)
-			return HttpResponseRedirect(request.GET.get('next', reverse('forum:index')))
+			form.save()
 	else:
-		form = SignupForm()
-	return render_with_tags(request, 'profile_edit.html', {
+		form = EditAvatarForm()
+	return render_with_tags(request, 'profile.html', {
 		'form': form
 	})
 
@@ -103,6 +106,8 @@ def logout_(request):
 
 @require_GET
 def user(request, user_id):
+	if user_id == request.user.id:
+		return HttpResponseRedirect(reverse('forum:profile'))
 	return render_with_tags(request, 'user.html', {
 		'user': get_object_or_404(User, id=user_id)
 	})
@@ -124,10 +129,17 @@ def users(request):
 
 @login_required
 def ask(request):
-	form = AskQuestionForm(request.user, request.POST)
-	if form.is_valid():
-		question_ = form.save()
-		return HttpResponseRedirect(reverse('forum:question', args=question_.id))
+	if request.method == 'POST':
+		form = AskQuestionForm(request.POST)
+		if form.is_valid():
+			# question_ = form.save()
+			question_ = Question.objects.create(
+				author=request.user, title=form.cleaned_data['title'], text=form.cleaned_data['text'])
+			question_.tags.set(form.cleaned_data['tags'])
+			question_.save()
+			return HttpResponseRedirect(reverse('forum:question', args=question_.id))
+	else:
+		form = AskQuestionForm()
 	return render_with_tags(request, 'ask.html', {
 		'form': form
 	})

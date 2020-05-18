@@ -1,5 +1,6 @@
 import os
 # DJango admin superuser username=nick, password=8z23FcC0DR7URK9d
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 SECRET_KEY = 't=znvrz0yynq8=v)33&6dwl13pv5f=%%&a-l^oxdj34_qi(6xd'
@@ -89,6 +90,10 @@ LOGIN_REDIRECT_URL = '/user'
 LOGIN_URL = '/login'
 
 AUTH_USER_MODEL = 'forum.User'
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+MEDIA_URL = '/media/'
 
 STATICFILES_DIRS = [
 	os.path.join(BASE_DIR, 'static')

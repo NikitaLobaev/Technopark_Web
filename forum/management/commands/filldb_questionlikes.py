@@ -1,3 +1,4 @@
+import random
 from random import randrange
 
 from django.core.management.base import BaseCommand
@@ -15,7 +16,7 @@ class Command(BaseCommand):
 		users = User.objects.all()
 		for question in Question.objects.all():
 			rating = 0
-			for i in range(0, randrange(0, min(len(users), int(options['max_count'])))):
+			for i in random.sample(range(len(users)), randrange(0, 1 + min(int(options['max_count']), len(users)))):
 				like = randrange(0, 2) == 1
 				if like:
 					rating = rating + 1

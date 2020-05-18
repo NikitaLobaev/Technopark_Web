@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{{ block.super }}. Профиль{% endblock %}
+{% block content %}
+	<div class="col-md-8">
+		<h3 class="my-3">Пользователь <b>{{ request.user }}</b></h3>
+		<img alt="avatar" class="avatar" src="{{ request.user.avatar }}">
+		<form action="{% url 'forum:profile_edit_avatar' %}" class="form-horizontal" method="post">
+			{% csrf_token %}
+			{{ form_avatar.as_p }}
+			<div class="form-actions">
+				<button type="submit" class="btn btn-primary">Обновить аватар</button>
+			</div>
+		</form>
+		<p><a class="btn btn-primary" href="{% url 'forum:logout' %}">Выйти из аккаунта</a></p>
+	</div>
+{% endblock %}

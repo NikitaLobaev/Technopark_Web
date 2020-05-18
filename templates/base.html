@@ -1,5 +1,5 @@
 {% load static %}
-<!DOCTYPE html>
+<!DOCTYPE html><!-- TODO: упорядочить в порядке алфавита атрибуты -->
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
@@ -11,7 +11,8 @@
 <body>
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
 	<div class="container">
-		<span class="navbar-brand">ASK&ANSWER</span>
+		{% comment %}<span class="navbar-brand">ASK&ANSWER</span>{% endcomment %}
+		<img alt="Логотип" src="{% static 'logo.png' %}">
 		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
 			<span class="navbar-toggler-icon"></span>
 		</button>
@@ -20,14 +21,11 @@
 				<li class="nav-item{% block navbar_home %}{% endblock %}">
 					<a class="nav-link" href="{% url 'forum:index' %}">Главная страница</a>
 				</li>
+				<li class="nav-item{% block navbar_hot %}{% endblock %}">
+					<a class="nav-link" href="{% url 'forum:hot' %}">Лучшие вопросы</a>
+				</li>
 				<li class="nav-item{% block navbar_users %}{% endblock %}">
 					<a class="nav-link" href="{% url 'forum:users' %}">Пользователи</a>
-				</li>
-				<li class="nav-item{% block navbar_help %}{% endblock %}">
-					<a class="nav-link disabled">Помощь</a>
-				</li>
-				<li class="nav-item{% block navbar_about %}{% endblock %}">
-					<a class="nav-link disabled">О форуме</a>
 				</li>
 			</ul>
 		</div>
@@ -39,7 +37,7 @@
 		<div class="col-md-4">
 			<div class="card my-4">
 				{% if request.user.is_authenticated %}
-					<h5 class="card-header"><a href="{% url 'forum:profile_edit' %}">{{ request.user.username }}</a></h5>
+					<h5 class="card-header"><a href="{% url 'forum:profile' %}">{{ request.user.username }}</a></h5>
 				{% else %}
 					<h5 class="card-header"><a href="{% url 'forum:login' %}">Вход в аккаунт</a></h5>
 					<h5 class="card-header"><a href="{% url 'forum:signup' %}">Регистрация</a></h5>
