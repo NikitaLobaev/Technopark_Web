@@ -16,6 +16,7 @@ INSTALLED_APPS = [
 	'django.contrib.sessions',
 	'django.contrib.messages',
 	'django.contrib.staticfiles',
+	'django_cleanup',
 	'forum.apps.ForumConfig',
 ]
 
@@ -85,15 +86,15 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-LOGIN_REDIRECT_URL = '/user'
+LOGIN_REDIRECT_URL = '/user/'
 
-LOGIN_URL = '/login'
+LOGIN_URL = '/login/'
 
 AUTH_USER_MODEL = 'forum.User'
 
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'uploads')
 
-MEDIA_URL = '/media/'
+MEDIA_URL = '/uploads/'
 
 STATICFILES_DIRS = [
 	os.path.join(BASE_DIR, 'static')

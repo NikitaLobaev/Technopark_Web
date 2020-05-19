@@ -13,6 +13,17 @@
 		<hr>
 		<p class="mt-3 mb-3">
 			Задан {{ question.pub_date }} пользователем <a href="{% url 'forum:user' question.author.id %}">{{ question.author }}</a>
+			<span class="fa fa-thumbs-down" id="question_dislike" onclick="rate_question(false)" style="margin-right: 10px;"></span>
+			<span class="fa fa-thumbs-up" id="question_like" onclick="rate_question(true)" style="margin-right: 10px;"></span>
+			<span style="float: right; margin-right: 10px;">
+			{% if question.rating > 0 %}
+				<b class="text-success" id="question_rating">+{{ question.rating }}</b>
+			{% elif question.rating < 0 %}
+				<b class="text-danger" id="question_rating">{{ question.rating }}</b>
+			{% else %}
+				<b id="question_rating">0</b>
+			{% endif %}
+			</span>
 		</p>
 		<hr>
 		{% for comment in question.get_comments %}
@@ -35,9 +46,25 @@
 				</form>
 			</div>
 		</div>
+		<div class="card mt-5">
+			<form class="form-horizontal" method="post">
+				{% csrf_token %}
+				{{ form.as_p }}
+				<button type="submit" class="btn btn-primary">Ответить</button>
+			</form>
+			{% comment %}<h5 class="card-header">Ответить на вопрос:</h5>
+			<div class="card-body">
+				<form method="post">
+					<div class="form-group">
+						<textarea class="form-control" rows="5"></textarea>
+					</div>
+					<button type="submit" class="btn btn-primary">Отправить</button>
+				</form>
+			</div>{% endcomment %}
+		</div>
 		<h3 class="mt-4">Ответы ({{ question.answers_count }})</h3>
 		{% for answer in question.get_answers %}
-			<div class="card mt-4 mb-4">
+			<div class="card mt-4 mb-4" id="answer_{{ answer.id }}">
 				<div class="card-body">
 					<p class="card-text">{{ answer }}</p>
 				</div>
@@ -54,16 +81,8 @@
 			{% endfor %}
 			<hr>
 		{% endfor %}
-		<div class="card mt-5">
-			<h5 class="card-header">Ответить на вопрос:</h5>
-			<div class="card-body">
-				<form method="post">
-					<div class="form-group">
-						<textarea class="form-control" rows="5"></textarea>
-					</div>
-					<button type="submit" class="btn btn-primary">Отправить</button>
-				</form>
-			</div>
-		</div>
 	</div>
+{% endblock %}
+{% block script %}
+	<script src="{% static 'question.js' %}" type="text/javascript"></script>
 {% endblock %}

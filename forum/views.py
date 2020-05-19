@@ -1,16 +1,17 @@
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
-from django.http import HttpResponseNotFound, HttpResponseRedirect
-from django.shortcuts import render, get_object_or_404
+from django.http import HttpResponseNotFound
+from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
 from django.views.decorators.http import require_GET
 
-from forum.forms import AskQuestionForm, SignupForm, LoginForm, EditAvatarForm, QuestionsPaginationForm
+from forum.forms import AskQuestionForm, SignupForm, LoginForm, QuestionsPaginationForm, EditProfileForm, \
+	EditPasswordForm, AnswerTheQuestionForm
 from forum.models import Question, QuestionTag, User
 
 # TODO: optimize and sort ALL imports EVERYWHERE!
-users_per_page = 10
+# TODO: бизнес-логика сохранения форм тоже вероятно надо перенести в models
 hot_questions_min_rating = 10
 
 
@@ -50,14 +51,14 @@ def index(request):
 
 def signup(request):  # TODO: при смене пароля запрашивать его заново в целях безопасности
 	if request.user.is_authenticated:
-		return HttpResponseRedirect(reverse('forum:index'))
+		return redirect('forum:index')
 	if request.method == 'POST':
 		form = SignupForm(request.POST)
 		if form.is_valid():
 			if not User.objects.filter(username=form.cleaned_data['username']).exists():
 				user_ = form.save()
 				login(request, user_)
-				return HttpResponseRedirect(request.GET.get('next', reverse('forum:index')))
+				return redirect(request.GET.get('next', reverse('forum:index')))
 			form.add_error('username', 'Пользователь с таким никнеймом уже зарегистрирован.')
 	else:
 		form = SignupForm()
@@ -68,14 +69,14 @@ def signup(request):  # TODO: при смене пароля запрашива�
 
 def login_(request):  # TODO: captcha EVERYWHERE if it needs!
 	if request.user.is_authenticated:
-		return HttpResponseRedirect(reverse('forum:index'))
+		return redirect('forum:index')
 	if request.method == 'POST':
-		form = LoginForm(request.POST)
+		form = LoginForm(data=request.POST)
 		if form.is_valid():
-			user_ = authenticate(username=form.cleaned_data['username'], password=form.cleaned_data['password'])
+			user_ = authenticate(request, username=form.cleaned_data['username'], password=form.cleaned_data['password'])
 			if user_:
 				login(request, user_)
-				return HttpResponseRedirect(request.GET.get('next', reverse('forum:profile_edit')))
+				return redirect(request.GET.get('next', reverse('forum:index')))
 			else:
 				form.add_error('username', 'Неверный логин или пароль')
 	else:
@@ -88,34 +89,39 @@ def login_(request):  # TODO: captcha EVERYWHERE if it needs!
 @login_required
 def profile(request):
 	if request.method == 'POST':
-		form = EditAvatarForm(request.POST)
-		if form.is_valid():
-			form.save()
+		edit_profile_form = EditProfileForm(data=request.POST, files=request.FILES, instance=request.user)
+		edit_password_form = EditPasswordForm(data=request.POST, instance=request.user)
+		if edit_profile_form.is_valid():
+			x = edit_profile_form.save()
+		elif edit_password_form.is_valid():
+			edit_password_form.save()
 	else:
-		form = EditAvatarForm()
+		edit_profile_form = EditProfileForm(instance=request.user)
+		edit_password_form = EditPasswordForm()
 	return render_with_tags(request, 'profile.html', {
-		'form': form
+		'edit_profile_form': edit_profile_form,
+		'edit_password_form': edit_password_form
 	})
 
 
 @login_required
 def logout_(request):
 	logout(request)
-	return HttpResponseRedirect(request.GET.get('next', reverse('forum:index')))
+	return redirect(request.GET.get('next', reverse('forum:index')))
 
 
 @require_GET
 def user(request, user_id):
 	if user_id == request.user.id:
-		return HttpResponseRedirect(reverse('forum:profile'))
+		return redirect('forum:profile')
 	return render_with_tags(request, 'user.html', {
 		'user': get_object_or_404(User, id=user_id)
 	})
 
 
 @require_GET
-def users(request):
-	paginator = Paginator(User.objects.all(), users_per_page)
+def users(request):  # TODO: переделать пагинацию
+	paginator = Paginator(User.objects.all(), 10)
 	try:
 		users_ = paginator.page(request.GET.get('page', 1))
 	except PageNotAnInteger:
@@ -132,12 +138,12 @@ def ask(request):
 	if request.method == 'POST':
 		form = AskQuestionForm(request.POST)
 		if form.is_valid():
-			# question_ = form.save()
-			question_ = Question.objects.create(
-				author=request.user, title=form.cleaned_data['title'], text=form.cleaned_data['text'])
-			question_.tags.set(form.cleaned_data['tags'])
+			question_ = form.save(commit=False)
+			question_.author = request.user
 			question_.save()
-			return HttpResponseRedirect(reverse('forum:question', args=question_.id))
+			question_.tags.set(form.cleaned_data['tags'])  # TODO: check why tags не запоминаются
+			question_.save()
+			return redirect('forum:question', question_id=question_.id)
 	else:
 		form = AskQuestionForm()
 	return render_with_tags(request, 'ask.html', {
@@ -146,8 +152,19 @@ def ask(request):
 
 
 def question(request, question_id):
+	if request.user.is_authenticated and request.method == 'POST':
+		form = AnswerTheQuestionForm(request.POST)
+		if form.is_valid():  # TODO: не забыть про якорь скролла на этот ответ
+			answer = form.save(commit=False)
+			answer.author = request.user
+			answer.question_id = question_id
+			answer.save()
+			Question.objects.get(id=question_id).new_answer_posted()
+	else:
+		form = AnswerTheQuestionForm()
 	return render_with_tags(request, 'question.html', {
-		'question': get_object_or_404(Question, id=question_id)
+		'question': get_object_or_404(Question, id=question_id),
+		'form': form
 	})
 
 

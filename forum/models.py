@@ -1,3 +1,5 @@
+import os
+
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.db import models
 from django.utils.timezone import now
@@ -8,11 +10,16 @@ class MyUserManager(UserManager):
 		return self.filter(is_staff=False, is_active=True, is_superuser=False)
 
 
+def upload_avatar_filename(instance, filename):
+	return os.path.join('avatar', str(instance.id) + '_' + filename)
+
+
 class User(AbstractUser):
 	objects = MyUserManager()
 	username = models.CharField(max_length=30, unique=True)
 	email = models.EmailField(unique=True)
-	avatar = models.ImageField(default='/media/avatar/default.png')
+	
+	avatar = models.ImageField(default='avatar/default.png', upload_to=upload_avatar_filename)
 	
 	class Meta:
 		ordering = ['username']
@@ -59,6 +66,10 @@ class Question(models.Model):
 	class Meta:
 		ordering = ['-pub_date']
 	
+	def new_answer_posted(self):
+		self.answers_count += 1
+		self.save()
+	
 	def get_title_short(self):
 		if len(self.title) > 64:
 			return self.title[:61] + '...'
@@ -79,8 +90,6 @@ class Question(models.Model):
 
 
 class AnswerManager(models.Manager):
-	accept_order = {'pub_date': '-pub_date', 'rating': '-rating'}
-	
 	def get_by_question(self, question):
 		return self.filter(question=question)
 
@@ -92,6 +101,9 @@ class Answer(models.Model):
 	text = models.TextField('text')
 	pub_date = models.DateTimeField('pub_date', default=now, blank=True)
 	rating = models.IntegerField('rating', default=0)
+	
+	class Meta:
+		ordering = ['-rating']
 	
 	def __str__(self):
 		return self.text

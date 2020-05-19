@@ -4,14 +4,23 @@
 {% block content %}
 	<div class="col-md-8">
 		<h3 class="my-3">Пользователь <b>{{ request.user }}</b></h3>
-		<img alt="avatar" class="avatar" src="{{ request.user.avatar }}">
-		<form action="{% url 'forum:profile_edit_avatar' %}" class="form-horizontal" method="post">
+		<img alt="avatar" class="avatar" src="{{ request.user.avatar.url }}">
+		<form class="form-horizontal" enctype="multipart/form-data" method="post">
 			{% csrf_token %}
-			{{ form_avatar.as_p }}
+			{{ edit_profile_form.as_p }}
 			<div class="form-actions">
-				<button type="submit" class="btn btn-primary">Обновить аватар</button>
+				<button type="submit" class="btn btn-primary">Сохранить</button>
 			</div>
 		</form>
+		<hr>
+		<form class="form-horizontal" method="post">
+			{% csrf_token %}
+			{{ edit_password_form.as_p }}
+			<div class="form-actions">
+				<button type="submit" class="btn btn-primary">Изменить пароль</button>
+			</div>
+		</form>
+		<hr>
 		<p><a class="btn btn-primary" href="{% url 'forum:logout' %}">Выйти из аккаунта</a></p>
 	</div>
 {% endblock %}
