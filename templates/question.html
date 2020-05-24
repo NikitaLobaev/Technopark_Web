@@ -2,7 +2,7 @@
 {% load static %}
 {% block title %}{{ block.super }}. Вопрос{% endblock %}
 {% block content %}
-	<div class="col-md-8">
+	<div class="col-md-8" id="">
 		<h3 class="mt-3">{{ question.title }}</h3>
 		<p class="mt-0 mb-2">{{ question.text }}</p>
 		<i class="mt-0 mb-0 text-secondary">
@@ -12,58 +12,72 @@
 		</i>
 		<hr>
 		<p class="mt-3 mb-3">
-			Задан {{ question.pub_date }} пользователем <a href="{% url 'forum:user' question.author.id %}">{{ question.author }}</a>
-			<span class="fa fa-thumbs-down" id="question_dislike" onclick="rate_question(false)" style="margin-right: 10px;"></span>
-			<span class="fa fa-thumbs-up" id="question_like" onclick="rate_question(true)" style="margin-right: 10px;"></span>
-			<span style="float: right; margin-right: 10px;">
-			{% if question.rating > 0 %}
-				<b class="text-success" id="question_rating">+{{ question.rating }}</b>
-			{% elif question.rating < 0 %}
-				<b class="text-danger" id="question_rating">{{ question.rating }}</b>
-			{% else %}
-				<b id="question_rating">0</b>
-			{% endif %}
+			Задан {{ question.pub_date }} пользователем
+			<a href="{% url 'forum:user' question.author.id %}">
+				{{ question.author }}
+				<img alt="Аватар пользователя" class="ml-2 rounded-circle" src="{{ question.author.avatar.url }}" style="width: 32px; height: 32px;">
+			</a>
+			<span class="fa fa-thumbs-down" id="question_dislike" onclick="ajax_rate_question(false)" style="margin-right: 10px;"></span>
+			<span class="fa fa-thumbs-up" id="question_like" onclick="ajax_rate_question(true)" style="margin-right: 10px;"></span>
+			<span style="cursor: default; float: right; margin-right: 10px;">
+				<b{% if question.rating > 0 %} class="text-success"{% elif question.rating < 0 %} class="text-danger"{% endif %} id="question_rating">{{ question.rating }}</b>
 			</span>
 		</p>
+		<form id="ajax_question_rating" style="display: none">
+			{% csrf_token %}
+			{{ question_rating_form }}
+		</form>
 		<hr>
-		{% for comment in question.get_comments %}
+		<div id="comments_to_question">
+			{% for comment in question.get_comments %}
 			<div class="media mb-4">
-				<img class="d-flex mr-3 rounded-circle" src="{{ comment }}" alt="Аватар пользователя">
+				<a href="{% url 'forum:user' comment.author.id %}">
+					<img class="d-flex mr-3 rounded-circle" src="{{ comment.author.avatar.url }}" style="width: 64px; height: 64px;" alt="Аватар пользователя">
+				</a>
 				<div class="media-body">
 					<h5 class="mt-0"><a href="{% url 'forum:user' comment.author.id %}">{{ comment.author }}</a></h5>
 					{{ comment }}
 				</div>
 			</div>
-		{% endfor %}
-		<div class="card">
-			<h5 class="card-header">Оставить комментарий:</h5>
-			<div class="card-body">
-				<form method="post">
-					<div class="form-group">
-						<textarea class="form-control" rows="2"></textarea>
-					</div>
-					<button type="submit" class="btn btn-primary">Отправить</button>
-				</form>
-			</div>
+			{% endfor %}
 		</div>
-		<div class="card mt-5">
+		<div class="card">
+			<form id="ajax_comment_to_question" class="form-horizontal" method="post">
+				{% csrf_token %}
+				{{ comment_to_question_form.question }}
+				<h5 class="card-header"><label for="{{ comment_to_question_form.text.id_for_label }}">Оставить комментарий:</label></h5>
+				<div class="card-body">
+					{{ comment_to_question_form.non_field_errors }}
+					{{ comment_to_question_form.text.errors }}
+					<div class="form-group">
+						{{ comment_to_question_form.text }}
+					</div>
+					<button class="btn btn-primary">Отправить</button>
+				</div>
+			</form>
+		</div>
+		<div class="card mt-3">
 			<form class="form-horizontal" method="post">
 				{% csrf_token %}
-				{{ form.as_p }}
-				<button type="submit" class="btn btn-primary">Ответить</button>
-			</form>
-			{% comment %}<h5 class="card-header">Ответить на вопрос:</h5>
-			<div class="card-body">
-				<form method="post">
+				{{ answer_form.question }}
+				<h5 class="card-header"><label for="{{ answer_form.text.id_for_label }}">Ответить на вопрос:</label></h5>
+				<div class="card-body">
+					{{ answer_form.non_field_errors }}
+					{{ answer_form.text.errors }}
 					<div class="form-group">
-						<textarea class="form-control" rows="5"></textarea>
+						{{ answer_form.text }}
 					</div>
-					<button type="submit" class="btn btn-primary">Отправить</button>
-				</form>
-			</div>{% endcomment %}
+					<button class="btn btn-primary">Отправить</button>
+				</div>
+			</form>
 		</div>
+		{% if question.answers_count > 0 %}
 		<h3 class="mt-4">Ответы ({{ question.answers_count }})</h3>
-		{% for answer in question.get_answers %}
+		<form class="form-horizontal" id="pagination">
+			{{ pagination_form.as_p }}
+		</form>
+		{% include 'pagination.html' %}
+		{% for answer in pagination %}
 			<div class="card mt-4 mb-4" id="answer_{{ answer.id }}">
 				<div class="card-body">
 					<p class="card-text">{{ answer }}</p>
@@ -81,6 +95,10 @@
 			{% endfor %}
 			<hr>
 		{% endfor %}
+		{% include 'pagination.html' %}
+		{% else %}
+			<h3 class="mt-4">Ответов нет</h3>
+		{% endif %}
 	</div>
 {% endblock %}
 {% block script %}

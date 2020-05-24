@@ -18,7 +18,6 @@ class User(AbstractUser):
 	objects = MyUserManager()
 	username = models.CharField(max_length=30, unique=True)
 	email = models.EmailField(unique=True)
-	
 	avatar = models.ImageField(default='avatar/default.png', upload_to=upload_avatar_filename)
 	
 	class Meta:
@@ -47,7 +46,8 @@ class QuestionManager(models.Manager):  # TODO: maybe place accept_order in mode
 	}
 	
 	def get_hot(self, min_rating):
-		return self.filter(rating__gte=min_rating).order_by(self.accept_order['rating'])
+		# ...
+		return self.filter(rating__gte=min_rating)
 	
 	def get_by_tag(self, tag):
 		return self.filter(tags__exact=tag)
@@ -87,6 +87,24 @@ class Question(models.Model):
 	
 	def get_answers(self):
 		return Answer.objects.get_by_question(question=self)
+	
+	def was_rated(self, user):
+		return QuestionLike.objects.filter(author=user, question=self)
+	
+	def rating_add(self, user, like):
+		like = QuestionLike.objects.create(author=user, like=like, question=self)
+		if like:
+			self.rating = self.rating + 1
+		else:
+			self.rating = self.rating - 1
+	
+	def rating_remove(self, user):
+		like = QuestionLike.objects.get(author=user, question=self)
+		if like.like:
+			self.rating = self.rating - 1
+		else:
+			self.rating = self.rating + 1
+		like.delete()
 
 
 class AnswerManager(models.Manager):
@@ -113,11 +131,12 @@ class Answer(models.Model):
 
 
 class Like(models.Model):
-	author = models.ForeignKey(User, on_delete=models.CASCADE)
-	like = models.BooleanField('like', default=True)
+	author = models.ForeignKey(User, on_delete=models.CASCADE, primary_key=True)
+	like = models.BooleanField('like', default=True, db_index=True)
 	
 	class Meta:
 		abstract = True
+		unique_together = ('author', 'like')
 	
 	def __int__(self):
 		if self.like:

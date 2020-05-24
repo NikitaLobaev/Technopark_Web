@@ -1,11 +1,11 @@
 from django import forms
-from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm, PasswordChangeForm
+from django.forms import TextInput, PasswordInput, ModelForm, SelectMultiple, Textarea, HiddenInput
 
-from forum.models import Question, User, Answer
+from forum.models import Question, User, Answer, CommentToQuestion, QuestionLike
 
 
 class AuthFormMeta:
-	model = User
 	labels = {
 		'username': 'Логин',
 		'password': 'Пароль',
@@ -13,6 +13,24 @@ class AuthFormMeta:
 		'first_name': 'Имя',
 		'last_name': 'Фамилия',
 		'avatar': 'Аватар'
+	}
+	model = User
+	widgets = {
+		'username': TextInput(attrs={
+			'class': 'form-control'
+		}),
+		'password': PasswordInput(attrs={
+			'class': 'form-control'
+		}),
+		'email': TextInput(attrs={
+			'class': 'form-control'
+		}),
+		'first_name': TextInput(attrs={
+			'class': 'form-control'
+		}),
+		'last_name': TextInput(attrs={
+			'class': 'form-control'
+		})
 	}
 
 
@@ -26,25 +44,17 @@ class LoginForm(AuthenticationForm):
 		fields = ['username', 'password']
 
 
-class EditProfileForm(forms.ModelForm):
+class EditProfileForm(ModelForm):
 	class Meta(AuthFormMeta):
 		fields = ['avatar', 'username', 'email', 'first_name', 'last_name']
 
 
-class EditPasswordForm(forms.ModelForm):
-	password_old = forms.CharField(max_length=100)
-	password_repeat = forms.CharField(max_length=100)
-	
+class EditPasswordForm(PasswordChangeForm):  # TODO: не изменяется widget и атрибут class!!!
 	class Meta(AuthFormMeta):
-		fields = ['password_old', 'password', 'password_repeat']
-		labels = {
-			'password_old': 'Старый пароль',
-			'password': 'Новый пароль',
-			'password_repeat': 'Повторите новый пароль'
-		}
+		fields = '__all__'
 
 
-class AskQuestionForm(forms.ModelForm):
+class AskQuestionForm(ModelForm):
 	class Meta:
 		model = Question
 		fields = ['title', 'text', 'tags']
@@ -53,18 +63,58 @@ class AskQuestionForm(forms.ModelForm):
 			'text': 'Тело',
 			'tags': 'Теги'
 		}
-
-
-class AnswerTheQuestionForm(forms.ModelForm):
-	class Meta:
-		model = Answer
-		fields = ['text']
-		labels = {
-			'text': 'Ответ'
+		widgets = {
+			'title': TextInput(attrs={
+				'class': 'form-control'
+			}),
+			'text': TextInput(attrs={
+				'class': 'form-control'
+			}),
+			'tags': SelectMultiple(attrs={
+				'class': 'form-control'
+			})
 		}
 
 
-class QuestionsPaginationForm(forms.Form):
+class QuestionRatingForm(ModelForm):
+	class Meta:
+		fields = ['question', 'like']
+		model = QuestionLike
+
+
+class AnswerTheQuestionForm(ModelForm):
+	class Meta:
+		model = Answer
+		fields = ['question', 'text']
+		labels = {
+			'text': 'Ответ'
+		}
+		widgets = {
+			'question': HiddenInput(),
+			'text': Textarea(attrs={
+				'class': 'form-control',
+				'rows': '6'
+			})
+		}
+
+
+class CommentToQuestionForm(ModelForm):
+	class Meta:
+		model = CommentToQuestion
+		fields = ['question', 'text']
+		labels = {
+			'text': 'Ответ'
+		}
+		widgets = {
+			'question': HiddenInput(),
+			'text': Textarea(attrs={
+				'class': 'form-control',
+				'rows': '3'
+			})
+		}
+
+
+class PaginationForm(forms.Form):
 	order = forms.ChoiceField(
 		widget=forms.Select(attrs={
 			'class': 'form-control',
@@ -72,13 +122,16 @@ class QuestionsPaginationForm(forms.Form):
 		}), choices=[
 			('-pub_date', 'дате (по убыванию)'), ('pub_date', 'дате (по возрастанию)'),
 			('-rating', 'рейтингу (по убыванию)'), ('rating', 'рейтингу (по возрастанию)'), ('title', 'заголовку')],
-		label='Сортировать по', required=False)
+		initial='-pub_date', label='Сортировать по', required=False)
 	limit = forms.ChoiceField(
 		widget=forms.Select(attrs={
 			'class': 'form-control',
 			'onchange': 'this.form.submit()'
-		}), choices=[('3', '3'), ('10', '10'), ('20', '20')], label='Вопросов на страницу', required=False)
-	page = forms.IntegerField(widget=forms.HiddenInput(), min_value=1, required=False)
+		}), choices=[('3', '3'), ('10', '10'), ('20', '20')], initial='3', label='Кол-во на страницу', required=True)
+	page = forms.IntegerField(widget=forms.NumberInput(attrs={
+		'class': 'form-control',
+		'onchange': 'this.form.submit()'
+	}), initial=1, label='Номер страницы', min_value=1, required=False)
 	
 	def clean_order(self):
 		order = self.cleaned_data['order']

@@ -17,6 +17,7 @@ class Command(BaseCommand):
 		for question in Question.objects.all():
 			rating = 0
 			for i in random.sample(range(len(users)), randrange(0, 1 + min(int(options['max_count']), len(users)))):
+				print(str(question.id) + ' ' + str(i))
 				like = randrange(0, 2) == 1
 				if like:
 					rating = rating + 1

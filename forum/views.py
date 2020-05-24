@@ -1,13 +1,13 @@
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
-from django.http import HttpResponseNotFound
+from django.http import HttpResponseNotFound, JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
-from django.views.decorators.http import require_GET
+from django.views.decorators.http import require_GET, require_POST
 
-from forum.forms import AskQuestionForm, SignupForm, LoginForm, QuestionsPaginationForm, EditProfileForm, \
-	EditPasswordForm, AnswerTheQuestionForm
+from forum.forms import AskQuestionForm, SignupForm, LoginForm, EditProfileForm, \
+	EditPasswordForm, AnswerTheQuestionForm, CommentToQuestionForm, QuestionRatingForm, PaginationForm
 from forum.models import Question, QuestionTag, User
 
 # TODO: optimize and sort ALL imports EVERYWHERE!
@@ -22,8 +22,11 @@ def render_with_tags(request, template_name, context):
 
 @require_GET
 def render_questions(request, template_name, context):
-	questions_pagination_form = QuestionsPaginationForm(request.GET)
-	questions = context['questions']
+	if request.GET:
+		questions_pagination_form = PaginationForm(request.GET)
+	else:
+		questions_pagination_form = PaginationForm()
+	questions = context['pagination']
 	if questions_pagination_form.is_valid():
 		paginator = Paginator(
 			questions.order_by(questions_pagination_form.cleaned_data['order']),
@@ -33,19 +36,19 @@ def render_questions(request, template_name, context):
 		paginator = Paginator(questions, 10)
 		page = 1
 	try:
-		context['questions'] = paginator.page(page)
+		context['pagination'] = paginator.page(page)
 	except PageNotAnInteger:
 		return HttpResponseNotFound()
 	except EmptyPage:
-		context['questions'] = paginator.page(paginator.num_pages)
-	context['questions_pagination_form'] = questions_pagination_form
+		context['pagination'] = paginator.page(paginator.num_pages)
+	context['pagination_form'] = questions_pagination_form
 	return render_with_tags(request, template_name, context)
 
 
 @require_GET
 def index(request):
 	return render_questions(request, 'index.html', {
-		'questions': Question.objects.all()
+		'pagination': Question.objects.all()
 	})
 
 
@@ -90,14 +93,14 @@ def login_(request):  # TODO: captcha EVERYWHERE if it needs!
 def profile(request):
 	if request.method == 'POST':
 		edit_profile_form = EditProfileForm(data=request.POST, files=request.FILES, instance=request.user)
-		edit_password_form = EditPasswordForm(data=request.POST, instance=request.user)
+		edit_password_form = EditPasswordForm(data=request.POST, user=request.user)
 		if edit_profile_form.is_valid():
 			x = edit_profile_form.save()
 		elif edit_password_form.is_valid():
 			edit_password_form.save()
 	else:
 		edit_profile_form = EditProfileForm(instance=request.user)
-		edit_password_form = EditPasswordForm()
+		edit_password_form = EditPasswordForm(user=request.user)
 	return render_with_tags(request, 'profile.html', {
 		'edit_profile_form': edit_profile_form,
 		'edit_password_form': edit_password_form
@@ -153,25 +156,68 @@ def ask(request):
 
 def question(request, question_id):
 	if request.user.is_authenticated and request.method == 'POST':
-		form = AnswerTheQuestionForm(request.POST)
-		if form.is_valid():  # TODO: не забыть про якорь скролла на этот ответ
-			answer = form.save(commit=False)
+		answer_form = AnswerTheQuestionForm(request.POST)
+		if answer_form.is_valid():
+			answer = answer_form.save(commit=False)
 			answer.author = request.user
-			answer.question_id = question_id
 			answer.save()
-			Question.objects.get(id=question_id).new_answer_posted()
+			Question.objects.get(id=answer.question_id).new_answer_posted()
 	else:
-		form = AnswerTheQuestionForm()
+		answer_form = AnswerTheQuestionForm(initial={
+			'question': question_id
+		})
 	return render_with_tags(request, 'question.html', {
 		'question': get_object_or_404(Question, id=question_id),
-		'form': form
+		'question_rating_form': QuestionRatingForm(initial={
+			'question': question_id
+		}),
+		'comment_to_question_form': CommentToQuestionForm(initial={
+			'question': question_id
+		}),
+		'answer_form': answer_form,
+		# 'comment_to_answer_form': CommentToAnswerForm()
 	})
+
+
+@login_required
+@require_POST
+def ajax_comment_to_question(request):
+	form = CommentToQuestionForm(request.POST)
+	if form.is_valid():
+		comment_to_question = form.save(commit=False)
+		comment_to_question.author = request.user
+		comment_to_question.save()
+		return JsonResponse({
+			# 'profile_url': reverse('forum:user', request.user.id),
+			'avatar_url': request.user.avatar.url,  # TODO
+			'text': comment_to_question.text
+		})
+	return JsonResponse({
+		'error': form.errors.as_text()
+	}, status=400)
+
+
+@login_required
+@require_POST
+def ajax_rate_question(request):
+	form = QuestionRatingForm(request.POST)
+	if form.is_valid():
+		question_ = form.cleaned_data['question']
+		was_rated = question_.was_rated(request.user)
+		if was_rated:
+			question_.rating_remove(request.user)
+		else:
+			question_.rating_add(request.user, form.cleaned_data['like'])
+		return JsonResponse({})
+	return JsonResponse({
+		'error': form.errors.as_text()
+	}, status=400)
 
 
 @require_GET
 def hot(request):
 	return render_questions(request, 'hot.html', {
-		'questions': Question.objects.get_hot(hot_questions_min_rating)
+		'pagination': Question.objects.get_hot(hot_questions_min_rating)
 	})
 
 
@@ -179,5 +225,5 @@ def hot(request):
 def tag(request, tag_name):
 	return render_questions(request, 'tag.html', {
 		'tag_name': tag_name,
-		'questions': Question.objects.get_by_tag(get_object_or_404(QuestionTag, name=tag_name))
+		'pagination': Question.objects.get_by_tag(get_object_or_404(QuestionTag, name=tag_name))
 	})
