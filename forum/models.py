@@ -97,6 +97,7 @@ class Question(models.Model):
 			self.rating = self.rating + 1
 		else:
 			self.rating = self.rating - 1
+		self.save()
 	
 	def rating_remove(self, user):
 		like = QuestionLike.objects.get(author=user, question=self)
@@ -105,6 +106,7 @@ class Question(models.Model):
 		else:
 			self.rating = self.rating + 1
 		like.delete()
+		self.save()
 
 
 class AnswerManager(models.Manager):
@@ -131,8 +133,8 @@ class Answer(models.Model):
 
 
 class Like(models.Model):
-	author = models.ForeignKey(User, on_delete=models.CASCADE, primary_key=True)
-	like = models.BooleanField('like', default=True, db_index=True)
+	author = models.ForeignKey(User, on_delete=models.CASCADE)
+	like = models.BooleanField('like', default=True)
 	
 	class Meta:
 		abstract = True

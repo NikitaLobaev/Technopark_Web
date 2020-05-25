@@ -10,4 +10,5 @@ class Command(BaseCommand):
 		AnswerLike.objects.all().delete()
 		for answer in Answer.objects.all():
 			answer.rating = 0
+			answer.save()
 		print('erasedb_answerlikes: OK')

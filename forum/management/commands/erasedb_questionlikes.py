@@ -10,4 +10,5 @@ class Command(BaseCommand):
 		QuestionLike.objects.all().delete()
 		for question in Question.objects.all():
 			question.rating = 0
+			question.save()
 		print('erasedb_questionlikes: OK')

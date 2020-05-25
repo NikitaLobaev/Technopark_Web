@@ -7,12 +7,12 @@ from django.urls import reverse
 from django.views.decorators.http import require_GET, require_POST
 
 from forum.forms import AskQuestionForm, SignupForm, LoginForm, EditProfileForm, \
-	EditPasswordForm, AnswerTheQuestionForm, CommentToQuestionForm, QuestionRatingForm, PaginationForm
+	EditPasswordForm, AnswerTheQuestionForm, CommentToQuestionForm, QuestionRatingForm, PaginationForm, \
+	UsersPaginationForm
 from forum.models import Question, QuestionTag, User
 
 # TODO: optimize and sort ALL imports EVERYWHERE!
 # TODO: бизнес-логика сохранения форм тоже вероятно надо перенести в models
-hot_questions_min_rating = 10
 
 
 def render_with_tags(request, template_name, context):
@@ -22,10 +22,7 @@ def render_with_tags(request, template_name, context):
 
 @require_GET
 def render_questions(request, template_name, context):
-	if request.GET:
-		questions_pagination_form = PaginationForm(request.GET)
-	else:
-		questions_pagination_form = PaginationForm()
+	questions_pagination_form = PaginationForm(request.GET or None)
 	questions = context['pagination']
 	if questions_pagination_form.is_valid():
 		paginator = Paginator(
@@ -33,8 +30,8 @@ def render_questions(request, template_name, context):
 			questions_pagination_form.cleaned_data['limit'])
 		page = questions_pagination_form.cleaned_data['page']
 	else:
-		paginator = Paginator(questions, 10)
-		page = 1
+		paginator = Paginator(questions, questions_pagination_form.fields['limit'].initial)
+		page = questions_pagination_form.fields['page'].initial
 	try:
 		context['pagination'] = paginator.page(page)
 	except PageNotAnInteger:
@@ -123,16 +120,23 @@ def user(request, user_id):
 
 
 @require_GET
-def users(request):  # TODO: переделать пагинацию
-	paginator = Paginator(User.objects.all(), 10)
+def users(request):
+	users_pagination_form = UsersPaginationForm(request.GET or None)
+	if users_pagination_form.is_valid():
+		paginator = Paginator(User.objects.all(), users_pagination_form.cleaned_data['limit'])
+		page = users_pagination_form.cleaned_data['page']
+	else:
+		paginator = Paginator(User.objects.all(), users_pagination_form.fields['limit'].initial)
+		page = users_pagination_form.fields['page'].initial
 	try:
-		users_ = paginator.page(request.GET.get('page', 1))
+		users_ = paginator.page(page)
 	except PageNotAnInteger:
 		return HttpResponseNotFound()
 	except EmptyPage:
 		users_ = paginator.page(paginator.num_pages)
 	return render_with_tags(request, 'users.html', {
-		'users': users_
+		'pagination_form': users_pagination_form,
+		'pagination': users_
 	})
 
 
@@ -217,7 +221,7 @@ def ajax_rate_question(request):
 @require_GET
 def hot(request):
 	return render_questions(request, 'hot.html', {
-		'pagination': Question.objects.get_hot(hot_questions_min_rating)
+		'pagination': Question.objects.get_hot(10)
 	})
 
 

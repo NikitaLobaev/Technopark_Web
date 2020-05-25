@@ -114,15 +114,7 @@ class CommentToQuestionForm(ModelForm):
 		}
 
 
-class PaginationForm(forms.Form):
-	order = forms.ChoiceField(
-		widget=forms.Select(attrs={
-			'class': 'form-control',
-			'onchange': 'this.form.submit()'
-		}), choices=[
-			('-pub_date', 'дате (по убыванию)'), ('pub_date', 'дате (по возрастанию)'),
-			('-rating', 'рейтингу (по убыванию)'), ('rating', 'рейтингу (по возрастанию)'), ('title', 'заголовку')],
-		initial='-pub_date', label='Сортировать по', required=False)
+class UsersPaginationForm(forms.Form):
 	limit = forms.ChoiceField(
 		widget=forms.Select(attrs={
 			'class': 'form-control',
@@ -132,13 +124,6 @@ class PaginationForm(forms.Form):
 		'class': 'form-control',
 		'onchange': 'this.form.submit()'
 	}), initial=1, label='Номер страницы', min_value=1, required=False)
-	
-	def clean_order(self):
-		order = self.cleaned_data['order']
-		if order:
-			return order
-		else:
-			return '-pub_date'
 	
 	def clean_limit(self):
 		limit = self.cleaned_data['limit']
@@ -153,3 +138,21 @@ class PaginationForm(forms.Form):
 			return page
 		else:
 			return 1
+
+
+class PaginationForm(UsersPaginationForm):
+	order = forms.ChoiceField(
+		widget=forms.Select(attrs={
+			'class': 'form-control',
+			'onchange': 'this.form.submit()'
+		}), choices=[
+			('-pub_date', 'дате (по убыванию)'), ('pub_date', 'дате (по возрастанию)'),
+			('-rating', 'рейтингу (по убыванию)'), ('rating', 'рейтингу (по возрастанию)'), ('title', 'заголовку')],
+		initial='-pub_date', label='Сортировать по', required=False)
+	
+	def clean_order(self):
+		order = self.cleaned_data['order']
+		if order:
+			return order
+		else:
+			return '-pub_date'
