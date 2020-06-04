@@ -14,11 +14,18 @@
 		<p class="mt-3 mb-3">
 			Задан {{ question.pub_date }} пользователем
 			<a href="{% url 'forum:user' question.author.id %}">{{ question.author }}</a>
-			<a href="{% url 'forum:user' question.author.id %}"><img alt="Аватар пользователя" class="ml-2 rounded-circle" src="{{ question.author.avatar.url }}" style="width: 32px; height: 32px;"></a>
-			<span class="fa fa-thumbs-down" id="question_dislike" onclick="ajax_rate_question(false)" style="margin-right: 10px;"></span>
-			<span class="fa fa-thumbs-up" id="question_like" onclick="ajax_rate_question(true)" style="margin-right: 10px;"></span>
+			<a href="{% url 'forum:user' question.author.id %}"><img alt="Аватар пользователя"
+			                                                         class="ml-2 rounded-circle"
+			                                                         src="{{ question.author.avatar.url }}"
+			                                                         style="width: 32px; height: 32px;"></a>
+			<span class="fa fa-thumbs-down" id="question_dislike" onclick="ajax_rate_question(false)"
+			      style="margin-right: 10px;"></span>
+			<span class="fa fa-thumbs-up" id="question_like" onclick="ajax_rate_question(true)"
+			      style="margin-right: 10px;"></span>
 			<span style="cursor: default; float: right; margin-right: 10px;">
-				<b{% if question.rating > 0 %} class="text-success"{% elif question.rating < 0 %} class="text-danger"{% endif %} id="question_rating">{{ question.rating }}</b>
+				<b{% if question.rating > 0 %} class="text-success"{% elif question.rating < 0 %}
+				                               class="text-danger"{% endif %}
+				                               id="question_rating">{{ question.rating }}</b>
 			</span>
 		</p>
 		<form id="ajax_question_rating" style="display: none">
@@ -28,22 +35,25 @@
 		<hr>
 		<div id="comments_to_question">
 			{% for comment in question.get_comments %}
-			<div class="media mb-4">
-				<a href="{% url 'forum:user' comment.author.id %}">
-					<img class="d-flex mr-3 rounded-circle" src="{{ comment.author.avatar.url }}" style="width: 64px; height: 64px;" alt="Аватар пользователя">
-				</a>
-				<div class="media-body">
-					<h5 class="mt-0"><a href="{% url 'forum:user' comment.author.id %}">{{ comment.author }}</a></h5>
-					{{ comment }}
+				<div class="media mb-4">
+					<a href="{% url 'forum:user' comment.author.id %}">
+						<img class="d-flex mr-3 rounded-circle" src="{{ comment.author.avatar.url }}"
+						     style="width: 64px; height: 64px;" alt="Аватар пользователя">
+					</a>
+					<div class="media-body">
+						<h5 class="mt-0"><a href="{% url 'forum:user' comment.author.id %}">{{ comment.author }}</a>
+						</h5>
+						{{ comment }}
+					</div>
 				</div>
-			</div>
 			{% endfor %}
 		</div>
 		<div class="card">
 			<form id="ajax_comment_to_question" class="form-horizontal" method="post">
 				{% csrf_token %}
 				{{ comment_to_question_form.question }}
-				<h5 class="card-header"><label for="{{ comment_to_question_form.text.id_for_label }}">Оставить комментарий:</label></h5>
+				<h5 class="card-header"><label for="{{ comment_to_question_form.text.id_for_label }}">Оставить
+					комментарий:</label></h5>
 				<div class="card-body">
 					{{ comment_to_question_form.non_field_errors }}
 					{{ comment_to_question_form.text.errors }}
@@ -58,7 +68,8 @@
 			<form class="form-horizontal" method="post">
 				{% csrf_token %}
 				{{ answer_form.question }}
-				<h5 class="card-header"><label for="{{ answer_form.text.id_for_label }}">Ответить на вопрос:</label></h5>
+				<h5 class="card-header"><label for="{{ answer_form.text.id_for_label }}">Ответить на вопрос:</label>
+				</h5>
 				<div class="card-body">
 					{{ answer_form.non_field_errors }}
 					{{ answer_form.text.errors }}
@@ -70,30 +81,33 @@
 			</form>
 		</div>
 		{% if question.answers_count > 0 %}
-		<h3 class="mt-4">Ответы ({{ question.answers_count }})</h3>
-		<form class="form-horizontal" id="pagination">
-			{{ pagination_form.as_p }}
-		</form>
-		{% include 'pagination.html' %}
-		{% for answer in pagination %}
-			<div class="card mt-4 mb-4" id="answer_{{ answer.id }}">
-				<div class="card-body">
-					<p class="card-text">{{ answer }}</p>
-				</div>
-				<div class="card-footer text-muted">Ответ дан {{ answer.pub_date }} пользователем <a href="{% url 'forum:user' answer.author.id %}">{{ answer.author }}</a></div>
-			</div>
-			{% for comment in answer.get_comments %}
-				<div class="media mb-4">
-					<img class="d-flex mr-3 rounded-circle" src="{{ comment.author.avatar.url }}" style="width: 64px; height: 64px;" alt="Аватар пользователя">
-					<div class="media-body">
-						<h5 class="mt-0"><a href="{% url 'forum:user' comment.author.id %}">{{ comment.author }}</a></h5>
-						{{ comment }}
+			<h3 class="mt-4">Ответы ({{ question.answers_count }})</h3>
+			<form class="form-horizontal" id="pagination">
+				{{ pagination_form.as_p }}
+			</form>
+			{% include 'pagination.html' %}
+			{% for answer in pagination %}
+				<div class="card mt-4 mb-4" id="answer_{{ answer.id }}">
+					<div class="card-body">
+						<p class="card-text">{{ answer }}</p>
 					</div>
+					<div class="card-footer text-muted">Ответ дан {{ answer.pub_date }} пользователем <a
+							href="{% url 'forum:user' answer.author.id %}">{{ answer.author }}</a></div>
 				</div>
+				{% for comment in answer.get_comments %}
+					<div class="media mb-4">
+						<img class="d-flex mr-3 rounded-circle" src="{{ comment.author.avatar.url }}"
+						     style="width: 64px; height: 64px;" alt="Аватар пользователя">
+						<div class="media-body">
+							<h5 class="mt-0"><a href="{% url 'forum:user' comment.author.id %}">{{ comment.author }}</a>
+							</h5>
+							{{ comment }}
+						</div>
+					</div>
+				{% endfor %}
+				<hr>
 			{% endfor %}
-			<hr>
-		{% endfor %}
-		{% include 'pagination.html' %}
+			{% include 'pagination.html' %}
 		{% else %}
 			<h3 class="mt-4">Ответов нет</h3>
 		{% endif %}

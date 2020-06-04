@@ -4,8 +4,8 @@ from forum.models import Question
 
 
 class Command(BaseCommand):
-	help = 'Очистка БД: вопросы'
-	
-	def handle(self, *args, **options):
-		Question.objects.all().delete()
-		print('erasedb_questions: OK')
+    help = 'Очистка БД: вопросы'
+    
+    def handle(self, *args, **options):
+        Question.objects.all().delete()
+        print('erasedb_questions: OK')

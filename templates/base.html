@@ -14,7 +14,8 @@
 	<div class="container">
 		{% comment %}<span class="navbar-brand">ASK&ANSWER</span>{% endcomment %}
 		<img alt="Логотип" src="{% static 'logo.png' %}">
-		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive"
+		        aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
 			<span class="navbar-toggler-icon"></span>
 		</button>
 		<div class="collapse navbar-collapse" id="navbarResponsive">
@@ -66,9 +67,9 @@
 							<ul class="list-unstyled mb-0">
 								{% for tag in top_tags %}
 									{% if not forloop.counter|divisibleby:2 %}
-									<li>
-										<a href="{% url 'forum:tag' tag %}">{{ tag }}</a>
-									</li>
+										<li>
+											<a href="{% url 'forum:tag' tag %}">{{ tag }}</a>
+										</li>
 									{% endif %}
 								{% endfor %}
 							</ul>
@@ -77,9 +78,9 @@
 							<ul class="list-unstyled mb-0">
 								{% for tag in top_tags %}
 									{% if forloop.counter|divisibleby:2 %}
-									<li>
-										<a href="{% url 'forum:tag' tag %}">{{ tag }}</a>
-									</li>
+										<li>
+											<a href="{% url 'forum:tag' tag %}">{{ tag }}</a>
+										</li>
 									{% endif %}
 								{% endfor %}
 							</ul>
@@ -91,14 +92,16 @@
 				<h5 class="card-header">Лучшие пользователи</h5>
 				<div class="card-body">
 					<ul class="list-unstyled mb-0">
-					{% for user in top_users %}
-						<li>
-							<a href="{% url 'forum:user' user.id %}">
-								<img class="rounded-circle" src="{{ user.avatar.url }}" style="width: 64px; height: 64px;" alt="Аватар пользователя">
-							</a>
-							<a href="{% url 'forum:user' user.id %}" style="text-align: center;">{{ user.username }}</a>
-						</li>
-					{% endfor %}
+						{% for user in top_users %}
+							<li>
+								<a href="{% url 'forum:user' user.id %}">
+									<img class="rounded-circle" src="{{ user.avatar.url }}"
+									     style="width: 64px; height: 64px;" alt="Аватар пользователя">
+								</a>
+								<a href="{% url 'forum:user' user.id %}"
+								   style="text-align: center;">{{ user.username }}</a>
+							</li>
+						{% endfor %}
 					</ul>
 				</div>
 			</div>

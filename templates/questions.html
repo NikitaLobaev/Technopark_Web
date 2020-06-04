@@ -11,7 +11,8 @@
 		{% for question in pagination %}
 			<div class="card mb-4">
 				<div class="card-body">
-					<a href="{% url 'forum:question' question.id %}"><h2 class="card-title">{{ question.get_title_short }}</h2></a>
+					<a href="{% url 'forum:question' question.id %}"><h2
+							class="card-title">{{ question.get_title_short }}</h2></a>
 					<p class="card-text mb-1">{{ question.get_text_short }}</p>
 					<p class="mt-0 mb-2 text-secondary">
 						{% for question_tag in question.tags.all %}
@@ -29,7 +30,8 @@
 						{% endif %}
 					</i>
 				</div>
-				<div class="card-footer text-muted">Задан {{ question.pub_date }} пользователем <a href="{% url 'forum:user' question.author.id %}">{{ question.author }}</a></div>
+				<div class="card-footer text-muted">Задан {{ question.pub_date }} пользователем <a
+						href="{% url 'forum:user' question.author.id %}">{{ question.author }}</a></div>
 			</div>
 		{% endfor %}
 		{% include 'pagination.html' %}

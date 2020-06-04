@@ -1,7 +1,9 @@
 <ul class="pagination justify-content-center mb-4">
 	{% if pagination.has_previous %}
 		<li class="page-item">
-			<button class="page-link" onclick="pagination_form_submit({{ pagination.previous_page_number }})">&larr; Предыдущие</button>
+			<button class="page-link" onclick="pagination_form_submit({{ pagination.previous_page_number }})">&larr;
+				Предыдущие
+			</button>
 		</li>
 	{% else %}
 		<li class="page-item disabled">
@@ -10,7 +12,9 @@
 	{% endif %}
 	{% if pagination.has_next %}
 		<li class="page-item">
-			<button class="page-link" onclick="pagination_form_submit({{ pagination.next_page_number }})">Следующие &rarr;</button>
+			<button class="page-link" onclick="pagination_form_submit({{ pagination.next_page_number }})">Следующие
+				&rarr;
+			</button>
 		</li>
 	{% else %}
 		<li class="page-item disabled">

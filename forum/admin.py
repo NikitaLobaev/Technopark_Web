@@ -2,8 +2,9 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import Group
 
-from forum.models import User, QuestionTag, Question, QuestionLike, CommentToQuestion, Answer, AnswerLike, \
-	CommentToAnswer
+from forum.models import (Answer, AnswerLike, CommentToAnswer,
+                          CommentToQuestion, Question, QuestionLike,
+                          QuestionTag, User)
 
 admin.site.register(User, UserAdmin)
 admin.site.unregister(Group)

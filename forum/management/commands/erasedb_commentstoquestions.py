@@ -4,8 +4,8 @@ from forum.models import CommentToQuestion
 
 
 class Command(BaseCommand):
-	help = 'Очистка БД: комментарии к вопросам'
-	
-	def handle(self, *args, **options):
-		CommentToQuestion.objects.all().delete()
-		print('erasedb_commentstoquestion: OK')
+    help = 'Очистка БД: комментарии к вопросам'
+    
+    def handle(self, *args, **options):
+        CommentToQuestion.objects.all().delete()
+        print('erasedb_commentstoquestion: OK')

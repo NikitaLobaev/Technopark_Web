@@ -12,7 +12,8 @@
 		{% for user in pagination %}
 			<div>
 				<a href="{% url 'forum:user' user.id %}">
-					<img class="rounded-circle" src="{{ user.avatar.url }}" style="width: 64px; height: 64px;" alt="Аватар пользователя">
+					<img class="rounded-circle" src="{{ user.avatar.url }}" style="width: 64px; height: 64px;"
+					     alt="Аватар пользователя">
 				</a>
 				<a href="{% url 'forum:user' user.id %}" style="text-align: center;">{{ user.username }}</a>
 				<span> Ответов: {{ user.answers_count }}. Вопросов: {{ user.questions_count }}.</span>

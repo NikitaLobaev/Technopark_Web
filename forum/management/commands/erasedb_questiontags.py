@@ -4,8 +4,8 @@ from forum.models import QuestionTag
 
 
 class Command(BaseCommand):
-	help = 'Очистка БД: теги вопросов'
-	
-	def handle(self, *args, **options):
-		QuestionTag.objects.all().delete()
-		print('erasedb_questiontags: OK')
+    help = 'Очистка БД: теги вопросов'
+    
+    def handle(self, *args, **options):
+        QuestionTag.objects.all().delete()
+        print('erasedb_questiontags: OK')
