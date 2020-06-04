@@ -17,7 +17,8 @@ class Command(BaseCommand):
 		for question in Question.objects.all():
 			answers_count = randrange(0, 1 + min(int(options['max_count']), len(users)))
 			for i in random.sample(range(len(users)), answers_count):
-				Answer.objects.create(question=question, author=users[i], text='This is the answer to the question!')
+				answer = Answer.objects.create(question=question, author=users[i], text='This is the answer to the question!')
+				answer.author.answer_added(question)
 			question.answers_count = answers_count
 			question.save()
 		print('filldb_answers: OK')

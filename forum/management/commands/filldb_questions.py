@@ -22,4 +22,5 @@ class Command(BaseCommand):
 			for j in random.sample(range(len(question_tags)), randrange(1, min(len(question_tags), 5))):
 				question.tags.add(question_tags[j])
 			question.save()
+			question.author.question_added()
 		print('filldb_questions: OK')

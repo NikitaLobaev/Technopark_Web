@@ -35,21 +35,50 @@ class AuthFormMeta:
 
 
 class SignupForm(UserCreationForm):
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		self.fields['password1'].widget.attrs = self.fields['password2'].widget.attrs = {
+			'class': 'form-control'
+		}
+		self.fields['avatar'].widget.attrs = {
+			'class': 'form-control-file'
+		}
+	
 	class Meta(AuthFormMeta):
 		fields = ['username', 'email', 'first_name', 'last_name', 'avatar']
 
 
 class LoginForm(AuthenticationForm):
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		self.fields['username'].label = 'Логин'
+		self.fields['username'].widget.attrs = self.fields['password'].widget.attrs = {
+			'class': 'form-control'
+		}
+	
 	class Meta(AuthFormMeta):
 		fields = ['username', 'password']
 
 
 class EditProfileForm(ModelForm):
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		self.fields['avatar'].widget.attrs = {
+			'class': 'form-control-file'
+		}
+	
 	class Meta(AuthFormMeta):
 		fields = ['avatar', 'username', 'email', 'first_name', 'last_name']
 
 
-class EditPasswordForm(PasswordChangeForm):  # TODO: не изменяется widget и атрибут class!!!
+class EditPasswordForm(PasswordChangeForm):
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		self.fields['old_password'].widget.attrs = self.fields['new_password1'].widget.attrs =\
+			self.fields['new_password2'].widget.attrs = {
+			'class': 'form-control'
+		}
+	
 	class Meta(AuthFormMeta):
 		fields = '__all__'
 
@@ -85,12 +114,11 @@ class QuestionRatingForm(ModelForm):
 class AnswerTheQuestionForm(ModelForm):
 	class Meta:
 		model = Answer
-		fields = ['question', 'text']
+		fields = ['text']
 		labels = {
 			'text': 'Ответ'
 		}
 		widgets = {
-			'question': HiddenInput(),
 			'text': Textarea(attrs={
 				'class': 'form-control',
 				'rows': '6'
@@ -114,7 +142,16 @@ class CommentToQuestionForm(ModelForm):
 		}
 
 
-class UsersPaginationForm(forms.Form):
+class PaginationForm(forms.Form):
+	order = forms.ChoiceField(
+		widget=forms.Select(attrs={
+			'class': 'form-control',
+			'onchange': 'this.form.submit()'
+		}), choices=[
+			('-pub_date', 'дате (по убыванию)'), ('pub_date', 'дате (по возрастанию)'),
+			('-rating', 'рейтингу (по убыванию)'), ('rating', 'рейтингу (по возрастанию)'),
+			('-title', 'заголовку (по убыванию)'), ('title', 'заголовку (по возрастанию)')],
+		initial='-pub_date', label='Сортировать по', required=False)
 	limit = forms.ChoiceField(
 		widget=forms.Select(attrs={
 			'class': 'form-control',
@@ -125,34 +162,34 @@ class UsersPaginationForm(forms.Form):
 		'onchange': 'this.form.submit()'
 	}), initial=1, label='Номер страницы', min_value=1, required=False)
 	
+	def clean_order(self):
+		order = self.cleaned_data['order']
+		if order:
+			return order
+		else:
+			return self.fields['order'].initial
+	
 	def clean_limit(self):
 		limit = self.cleaned_data['limit']
 		if limit:
 			return limit
 		else:
-			return '3'
+			return self.fields['limit'].initial
 	
 	def clean_page(self):
 		page = self.cleaned_data['page']
 		if page:
 			return page
 		else:
-			return 1
+			return self.fields['page'].initial
 
 
-class PaginationForm(UsersPaginationForm):
-	order = forms.ChoiceField(
-		widget=forms.Select(attrs={
-			'class': 'form-control',
-			'onchange': 'this.form.submit()'
-		}), choices=[
-			('-pub_date', 'дате (по убыванию)'), ('pub_date', 'дате (по возрастанию)'),
-			('-rating', 'рейтингу (по убыванию)'), ('rating', 'рейтингу (по возрастанию)'), ('title', 'заголовку')],
-		initial='-pub_date', label='Сортировать по', required=False)
-	
-	def clean_order(self):
-		order = self.cleaned_data['order']
-		if order:
-			return order
-		else:
-			return '-pub_date'
+class UsersPaginationForm(PaginationForm):
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		self.fields['order'].choices = [
+			('-answers_count', 'популярности (по кол-ву ответов)'), ('username', 'имени (по возрастанию)'),
+			('-username', 'имени (по убыванию)')]
+		self.fields['order'].initial = '-answers_count'
+		self.fields['limit'].choices = [('10', '10'), ('30', '30'), ('50', '50')]
+		self.fields['limit'].initial = '30'

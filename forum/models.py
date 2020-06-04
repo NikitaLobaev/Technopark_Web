@@ -1,16 +1,22 @@
 import os
+from datetime import timedelta
 
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.db import models
+from django.db.models import Count, Q
 from django.utils.timezone import now
 
 
 class MyUserManager(UserManager):
 	def all(self):
 		return self.filter(is_staff=False, is_active=True, is_superuser=False)
+	
+	def get_top(self, count):
+		return self.annotate(
+			rating=Count(Question, filter=Q(question__pub_date__gt=now() - timedelta(days=90)))).order_by('-rating')[:count]
 
 
-def upload_avatar_filename(instance, filename):
+def upload_avatar_filename(instance, filename):  # TODO: возможно переделать
 	return os.path.join('avatar', str(instance.id) + '_' + filename)
 
 
@@ -19,16 +25,35 @@ class User(AbstractUser):
 	username = models.CharField(max_length=30, unique=True)
 	email = models.EmailField(unique=True)
 	avatar = models.ImageField(default='avatar/default.png', upload_to=upload_avatar_filename)
+	questions_count = models.IntegerField(default=0)
+	answers_count = models.IntegerField(default=0)
 	
 	class Meta:
-		ordering = ['username']
+		ordering = ['-answers_count']
 	
 	def __str__(self):
 		return self.username
+	
+	def question_added(self):
+		self.questions_count += 1
+		self.save()
+	
+	def answer_added(self, question):
+		question.answers_count += 1
+		question.save()
+		self.answers_count += 1
+		self.save()
+
+
+class QuestionTagManager(models.Manager):
+	def get_top(self, count):
+		return self.annotate(
+			rating=Count(Question, filter=Q(question__pub_date__gt=now() - timedelta(days=90)))).order_by('-rating')[:count]
 
 
 class QuestionTag(models.Model):
-	name = models.CharField('name', max_length=32, primary_key=True)
+	objects = QuestionTagManager()
+	name = models.CharField(max_length=32, primary_key=True)
 	description = models.TextField('description')
 	
 	class Meta:
@@ -38,15 +63,8 @@ class QuestionTag(models.Model):
 		return self.name
 
 
-class QuestionManager(models.Manager):  # TODO: maybe place accept_order in model, not in manager
-	accept_order = {
-		'pub_date': '-pub_date',
-		'rating': '-rating',
-		'title': 'title'
-	}
-	
-	def get_hot(self, min_rating):
-		# ...
+class QuestionManager(models.Manager):
+	def get_top(self, min_rating):
 		return self.filter(rating__gte=min_rating)
 	
 	def get_by_tag(self, tag):
@@ -56,19 +74,15 @@ class QuestionManager(models.Manager):  # TODO: maybe place accept_order in mode
 class Question(models.Model):
 	objects = QuestionManager()
 	author = models.ForeignKey(User, on_delete=models.CASCADE)
-	title = models.CharField('title', max_length=256)
-	text = models.TextField('text')
+	title = models.CharField(max_length=256)
+	text = models.TextField()
 	tags = models.ManyToManyField(QuestionTag)
-	pub_date = models.DateTimeField('pub_date', default=now, blank=True)
-	answers_count = models.IntegerField('answers_count', default=0)
-	rating = models.IntegerField('rating', default=0)
+	pub_date = models.DateTimeField(default=now, blank=True)
+	answers_count = models.IntegerField(default=0)
+	rating = models.IntegerField(default=0)
 	
 	class Meta:
 		ordering = ['-pub_date']
-	
-	def new_answer_posted(self):
-		self.answers_count += 1
-		self.save()
 	
 	def get_title_short(self):
 		if len(self.title) > 64:
@@ -118,9 +132,9 @@ class Answer(models.Model):
 	objects = AnswerManager()
 	question = models.ForeignKey(Question, on_delete=models.CASCADE)
 	author = models.ForeignKey(User, on_delete=models.CASCADE)
-	text = models.TextField('text')
-	pub_date = models.DateTimeField('pub_date', default=now, blank=True)
-	rating = models.IntegerField('rating', default=0)
+	text = models.TextField()
+	pub_date = models.DateTimeField(default=now, blank=True)
+	rating = models.IntegerField(default=0)
 	
 	class Meta:
 		ordering = ['-rating']
@@ -134,9 +148,9 @@ class Answer(models.Model):
 
 class Like(models.Model):
 	author = models.ForeignKey(User, on_delete=models.CASCADE)
-	like = models.BooleanField('like', default=True)
+	like = models.BooleanField(default=True)
 	
-	class Meta:
+	class Meta:  # TODO
 		abstract = True
 		unique_together = ('author', 'like')
 	
@@ -157,11 +171,12 @@ class AnswerLike(Like):
 
 class Comment(models.Model):
 	author = models.ForeignKey(User, on_delete=models.CASCADE)
-	text = models.CharField('text', max_length=256)
-	pub_date = models.DateTimeField('pub_date', default=now, blank=True)
+	text = models.CharField(max_length=256)
+	pub_date = models.DateTimeField(default=now, blank=True)
 	
 	class Meta:
 		abstract = True
+		ordering = ['-pub_date']
 	
 	def __str__(self):
 		return self.text

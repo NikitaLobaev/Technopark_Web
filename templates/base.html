@@ -22,8 +22,8 @@
 				<li class="nav-item{% block navbar_home %}{% endblock %}">
 					<a class="nav-link" href="{% url 'forum:index' %}">Главная страница</a>
 				</li>
-				<li class="nav-item{% block navbar_hot %}{% endblock %}">
-					<a class="nav-link" href="{% url 'forum:hot' %}">Лучшие вопросы</a>
+				<li class="nav-item{% block navbar_top %}{% endblock %}">
+					<a class="nav-link" href="{% url 'forum:top' %}">Лучшие вопросы</a>
 				</li>
 				<li class="nav-item{% block navbar_users %}{% endblock %}">
 					<a class="nav-link" href="{% url 'forum:users' %}">Пользователи</a>
@@ -64,7 +64,7 @@
 					<div class="row">
 						<div class="col-lg-6">
 							<ul class="list-unstyled mb-0">
-								{% for tag in tags %}
+								{% for tag in top_tags %}
 									{% if not forloop.counter|divisibleby:2 %}
 									<li>
 										<a href="{% url 'forum:tag' tag %}">{{ tag }}</a>
@@ -75,7 +75,7 @@
 						</div>
 						<div class="col-lg-6">
 							<ul class="list-unstyled mb-0">
-								{% for tag in tags %}
+								{% for tag in top_tags %}
 									{% if forloop.counter|divisibleby:2 %}
 									<li>
 										<a href="{% url 'forum:tag' tag %}">{{ tag }}</a>
@@ -85,6 +85,21 @@
 							</ul>
 						</div>
 					</div>
+				</div>
+			</div>
+			<div class="card my-4">
+				<h5 class="card-header">Лучшие пользователи</h5>
+				<div class="card-body">
+					<ul class="list-unstyled mb-0">
+					{% for user in top_users %}
+						<li>
+							<a href="{% url 'forum:user' user.id %}">
+								<img class="rounded-circle" src="{{ user.avatar.url }}" style="width: 64px; height: 64px;" alt="Аватар пользователя">
+							</a>
+							<a href="{% url 'forum:user' user.id %}" style="text-align: center;">{{ user.username }}</a>
+						</li>
+					{% endfor %}
+					</ul>
 				</div>
 			</div>
 		</div>

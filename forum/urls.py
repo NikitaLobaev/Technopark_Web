@@ -15,6 +15,6 @@ urlpatterns = [
 	path('ajax/comment_to_question', views.ajax_comment_to_question, name='ajax_comment_to_question'),
 	path('ajax/rate_question', views.ajax_rate_question, name='ajax_rate_question'),
 	# path('answer/<int:answer_id>/comment/', views.answer_comment, name='answer.comment'),
-	path('hot/', views.hot, name='hot'),
+	path('top/', views.top, name='top'),
 	path('tag/<str:tag_name>/', views.tag, name='tag')
 ]

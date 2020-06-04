@@ -4,15 +4,13 @@
 {% block content %}
 	<div class="col-md-8">
 		<h1 class="my-3">Регистрация</h1>
-		<div class="card">
-			<form class="form-horizontal" method="post">
-				{% csrf_token %}
-				{{ form.as_p }}
-				<div class="form-actions">
-					<button type="submit" class="btn btn-primary">Зарегистрироваться</button>
-				</div>
-			</form>
-		</div>
+		<form class="form-horizontal" method="post">
+			{% csrf_token %}
+			{{ form.as_p }}
+			<div class="form-actions">
+				<button type="submit" class="btn btn-primary">Зарегистрироваться</button>
+			</div>
+		</form>
 	</div>
 	{% comment %}{% for form_error in form.non_field_errors %}
 		<div class="alert alert-danger">{{ form_error }}</div>
