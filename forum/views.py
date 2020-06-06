@@ -7,10 +7,9 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_GET, require_POST
 
-from forum.forms import (AnswerTheQuestionForm, AskQuestionForm,
-                         CommentToQuestionForm, EditPasswordForm,
-                         EditProfileForm, LoginForm, PaginationForm,
-                         QuestionRatingForm, SignupForm, UsersPaginationForm)
+from forum.forms import (AnswersPaginationForm, AnswerTheQuestionForm, AskQuestionForm, CommentToQuestionForm,
+                         EditPasswordForm, EditProfileForm, LoginForm, QuestionsPaginationForm, QuestionRatingForm,
+                         SignupForm, UsersPaginationForm)
 from forum.models import Answer, CommentToQuestion, Question, QuestionTag, User
 
 
@@ -22,12 +21,11 @@ def render_with_cache(request, template_name, context):
 
 @require_GET
 def render_questions(request, template_name, context):
-    questions_pagination_form = PaginationForm(request.GET or None)
+    questions_pagination_form = QuestionsPaginationForm(request.GET or None)
     questions = context['pagination']
     if questions_pagination_form.is_valid():
-        paginator = Paginator(
-            questions.order_by(questions_pagination_form.cleaned_data['order']),
-            questions_pagination_form.cleaned_data['limit'])
+        paginator = Paginator(questions.order_by(questions_pagination_form.cleaned_data['order']),
+                              questions_pagination_form.cleaned_data['limit'])
         page = questions_pagination_form.cleaned_data['page']
     else:
         paginator = Paginator(questions, questions_pagination_form.fields['limit'].initial)
@@ -73,7 +71,7 @@ def login_(request):
         form = LoginForm(data=request.POST)
         if form.is_valid():
             user_ = authenticate(request, username=form.cleaned_data['username'],
-                password=form.cleaned_data['password'])
+                                 password=form.cleaned_data['password'])
             if user_:
                 login(request, user_)
                 return redirect(request.GET.get('next', reverse('forum:index')))
@@ -121,9 +119,8 @@ def user(request, user_id):
 def users(request):
     users_pagination_form = UsersPaginationForm(request.GET or None)
     if users_pagination_form.is_valid():
-        paginator = Paginator(
-            User.objects.order_by(users_pagination_form.cleaned_data['order']),
-            users_pagination_form.cleaned_data['limit'])
+        paginator = Paginator(User.objects.order_by(users_pagination_form.cleaned_data['order']),
+                              users_pagination_form.cleaned_data['limit'])
         page = users_pagination_form.cleaned_data['page']
     else:
         paginator = Paginator(User.objects.all(), users_pagination_form.fields['limit'].initial)
@@ -165,7 +162,7 @@ def question(request, question_id):
         answer_form = AnswerTheQuestionForm(initial={
             'question': question_id
         })
-    answers_pagination_form = PaginationForm(request.GET or None)
+    answers_pagination_form = AnswersPaginationForm(request.GET or None)
     if answers_pagination_form.is_valid():
         paginator = Paginator(
             question_.get_answers().order_by(answers_pagination_form.cleaned_data['order']),

@@ -13,24 +13,24 @@ class MyUserManager(UserManager):
     
     def get_top(self, count):
         return self.annotate(
-            rating=Count(Question, filter=Q(question__pub_date__gt=now() - timedelta(days=90)))).order_by('-rating')[
-        :count]
-
-
-def upload_avatar_filename(instance, filename):  # TODO: возможно переделать
-    return os.path.join('avatar', str(instance.id) + '_' + filename)
+            rating=Count(Question,
+                         filter=Q(question__pub_date__gt=now() - timedelta(days=90)))).order_by('-rating')[:count]
 
 
 class User(AbstractUser):
     objects = MyUserManager()
     username = models.CharField(max_length=30, unique=True)
     email = models.EmailField(unique=True)
+    
+    def upload_avatar_filename(self, filename):
+        return os.path.join('avatar', str(self.id) + '_' + filename)
+    
     avatar = models.ImageField(default='avatar/default.png', upload_to=upload_avatar_filename)
     questions_count = models.IntegerField(default=0)
     answers_count = models.IntegerField(default=0)
     
     class Meta:
-        ordering = ['-answers_count']
+        ordering = ['-answers_count', '-questions_count']
     
     def __str__(self):
         return self.username
@@ -48,9 +48,8 @@ class User(AbstractUser):
 
 class QuestionTagManager(models.Manager):
     def get_top(self, count):
-        return self.annotate(
-            rating=Count(Question, filter=Q(question__pub_date__gt=now() - timedelta(days=90)))).order_by('-rating')[
-        :count]
+        return self.annotate(rating=Count(Question,
+                             filter=Q(question__pub_date__gt=now() - timedelta(days=90)))).order_by('-rating')[:count]
 
 
 class QuestionTag(models.Model):
@@ -152,7 +151,7 @@ class Like(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     like = models.BooleanField(default=True)
     
-    class Meta:  # TODO
+    class Meta:
         abstract = True
         unique_together = ('author', 'like')
     

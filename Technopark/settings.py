@@ -60,7 +60,7 @@ DATABASES = {
     }
 }
 
-CACHES = {  # TODO: для тегов добавить memcached?
+CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
         'LOCATION': 'my_cache_table'

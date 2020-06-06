@@ -145,21 +145,18 @@ class CommentToQuestionForm(ModelForm):
         }
 
 
-class PaginationForm(forms.Form):
-    order = forms.ChoiceField(
-        widget=forms.Select(attrs={
-            'class': 'form-control',
-            'onchange': 'this.form.submit()'
-        }), choices=[
-            ('-pub_date', 'дате (по убыванию)'), ('pub_date', 'дате (по возрастанию)'),
-            ('-rating', 'рейтингу (по убыванию)'), ('rating', 'рейтингу (по возрастанию)'),
-            ('-title', 'заголовку (по убыванию)'), ('title', 'заголовку (по возрастанию)')],
+class QuestionsPaginationForm(forms.Form):
+    order = forms.ChoiceField(widget=forms.Select(attrs={
+        'class': 'form-control',
+        'onchange': 'this.form.submit()'
+    }), choices=[('-pub_date', 'дате (по убыванию)'), ('pub_date', 'дате (по возрастанию)'),
+                 ('-rating', 'рейтингу (по убыванию)'), ('rating', 'рейтингу (по возрастанию)'),
+                 ('-title', 'заголовку (по убыванию)'), ('title', 'заголовку (по возрастанию)')],
         initial='-pub_date', label='Сортировать по', required=False)
-    limit = forms.ChoiceField(
-        widget=forms.Select(attrs={
-            'class': 'form-control',
-            'onchange': 'this.form.submit()'
-        }), choices=[('3', '3'), ('10', '10'), ('20', '20')], initial='3', label='Кол-во на страницу', required=True)
+    limit = forms.ChoiceField(widget=forms.Select(attrs={
+        'class': 'form-control',
+        'onchange': 'this.form.submit()'
+    }), choices=[('3', '3'), ('10', '10'), ('20', '20')], initial='3', label='Кол-во на страницу', required=True)
     page = forms.IntegerField(widget=forms.NumberInput(attrs={
         'class': 'form-control',
         'onchange': 'this.form.submit()'
@@ -187,12 +184,18 @@ class PaginationForm(forms.Form):
             return self.fields['page'].initial
 
 
-class UsersPaginationForm(PaginationForm):
+class AnswersPaginationForm(QuestionsPaginationForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['order'].choices = [
-            ('-answers_count', 'популярности (по кол-ву ответов)'), ('username', 'имени (по возрастанию)'),
-            ('-username', 'имени (по убыванию)')]
+        self.fields['order'].choices = [('-pub_date', 'дате (по убыванию)'), ('pub_date', 'дате (по возрастанию)'),
+                                        ('-rating', 'рейтингу (по убыванию)'), ('rating', 'рейтингу (по возрастанию)')]
+
+
+class UsersPaginationForm(QuestionsPaginationForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['order'].choices = [('-answers_count', 'популярности (по кол-ву ответов)'),
+                                        ('username', 'имени (по возрастанию)'), ('-username', 'имени (по убыванию)')]
         self.fields['order'].initial = '-answers_count'
         self.fields['limit'].choices = [('10', '10'), ('30', '30'), ('50', '50')]
         self.fields['limit'].initial = '30'
