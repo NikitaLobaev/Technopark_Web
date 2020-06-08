@@ -164,14 +164,12 @@ def question(request, question_id):
         })
     answers_pagination_form = AnswersPaginationForm(request.GET or None)
     if answers_pagination_form.is_valid():
-        paginator = Paginator(
-            question_.get_answers().order_by(answers_pagination_form.cleaned_data['order']),
-            answers_pagination_form.cleaned_data['limit'])
+        paginator = Paginator(question_.get_answers().order_by(answers_pagination_form.cleaned_data['order']),
+                              answers_pagination_form.cleaned_data['limit'])
         page = answers_pagination_form.cleaned_data['page']
     else:
-        paginator = Paginator(
-            question_.get_answers().order_by(answers_pagination_form.fields['order'].initial),
-            answers_pagination_form.fields['limit'].initial)
+        paginator = Paginator(question_.get_answers().order_by(answers_pagination_form.fields['order'].initial),
+                              answers_pagination_form.fields['limit'].initial)
         page = answers_pagination_form.fields['page'].initial
     try:
         answers = paginator.page(page)

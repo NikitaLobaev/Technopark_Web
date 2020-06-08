@@ -2,8 +2,8 @@
 {% block title %}{{ block.super }}. Пользователь {{ user.username }}{% endblock %}
 {% load static %}
 {% block content %}
-	<div class="col-md-8">
-		<h3 class="my-3">Пользователь <b>{{ user.username }}</b></h3>
-		<img alt="avatar" class="avatar" src="{{ user.avatar.url }}">
-	</div>
+    <div class="col-md-8">
+        <h3 class="my-3">Пользователь <b>{{ user.username }}</b></h3>
+        <img alt="avatar" class="avatar" src="{{ user.avatar.url }}">
+    </div>
 {% endblock %}

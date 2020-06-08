@@ -19,15 +19,15 @@ class MyUserManager(UserManager):
 
 class User(AbstractUser):
     objects = MyUserManager()
-    username = models.CharField(max_length=30, unique=True)
-    email = models.EmailField(unique=True)
     
     def upload_avatar_filename(self, filename):
         return os.path.join('avatar', str(self.id) + '_' + filename)
-    
-    avatar = models.ImageField(default='avatar/default.png', upload_to=upload_avatar_filename)
-    questions_count = models.IntegerField(default=0)
+
     answers_count = models.IntegerField(default=0)
+    avatar = models.ImageField(default='avatar/default.png', upload_to=upload_avatar_filename)
+    email = models.EmailField(unique=True)
+    questions_count = models.IntegerField(default=0)
+    username = models.CharField(max_length=30, unique=True)
     
     class Meta:
         ordering = ['-answers_count', '-questions_count']
@@ -54,8 +54,8 @@ class QuestionTagManager(models.Manager):
 
 class QuestionTag(models.Model):
     objects = QuestionTagManager()
-    name = models.CharField(max_length=32, primary_key=True)
     description = models.TextField('description')
+    name = models.CharField(max_length=32, primary_key=True)
     
     class Meta:
         ordering = ['name']
@@ -74,13 +74,13 @@ class QuestionManager(models.Manager):
 
 class Question(models.Model):
     objects = QuestionManager()
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
-    title = models.CharField(max_length=256)
-    text = models.TextField()
-    tags = models.ManyToManyField(QuestionTag)
-    pub_date = models.DateTimeField(default=now, blank=True)
     answers_count = models.IntegerField(default=0)
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    pub_date = models.DateTimeField(default=now, blank=True)
     rating = models.IntegerField(default=0)
+    tags = models.ManyToManyField(QuestionTag)
+    text = models.TextField()
+    title = models.CharField(max_length=256)
     
     class Meta:
         ordering = ['-pub_date']
@@ -131,11 +131,12 @@ class AnswerManager(models.Manager):
 
 class Answer(models.Model):
     objects = AnswerManager()
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    accepted = models.BooleanField(default=False)
     author = models.ForeignKey(User, on_delete=models.CASCADE)
-    text = models.TextField()
     pub_date = models.DateTimeField(default=now, blank=True)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
     rating = models.IntegerField(default=0)
+    text = models.TextField()
     
     class Meta:
         ordering = ['-rating']
@@ -170,10 +171,15 @@ class AnswerLike(Like):
     answer = models.ForeignKey(Answer, on_delete=models.CASCADE)
 
 
+class AnswerApply(models.Model):
+    answer = models.ForeignKey(Answer, on_delete=models.CASCADE)
+    question = models.OneToOneField(Question, on_delete=models.CASCADE)
+
+
 class Comment(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE)
-    text = models.CharField(max_length=256)
     pub_date = models.DateTimeField(default=now, blank=True)
+    text = models.CharField(max_length=256)
     
     class Meta:
         abstract = True
