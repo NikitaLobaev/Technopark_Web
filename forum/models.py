@@ -22,7 +22,7 @@ class User(AbstractUser):
     
     def upload_avatar_filename(self, filename):
         return os.path.join('avatar', str(self.id) + '_' + filename)
-
+    
     answers_count = models.IntegerField(default=0)
     avatar = models.ImageField(default='avatar/default.png', upload_to=upload_avatar_filename)
     email = models.EmailField(unique=True)

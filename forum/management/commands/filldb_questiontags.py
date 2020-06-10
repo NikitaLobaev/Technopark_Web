@@ -1,4 +1,4 @@
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 
 from forum.models import QuestionTag
 
@@ -10,6 +10,9 @@ class Command(BaseCommand):
         parser.add_argument('count', type=int)
     
     def handle(self, *args, **options):
-        for i in range(0, int(options['count'])):
+        count = int(options['count'])
+        if count <= 0:
+            raise CommandError('Параметр count должен быть больше 0.')
+        for i in range(0, int(count)):
             QuestionTag.objects.create(name='Tag' + str(i), description='This it description of tag number ' + str(i))
         print('filldb_questiontags: OK')
