@@ -19,32 +19,30 @@ def render_with_cache(request, template_name, context):
     return render(request, template_name, context)
 
 
-@require_GET
-def render_questions(request, template_name, context):
-    questions_pagination_form = QuestionsPaginationForm(request.GET or None)
-    questions = context['pagination']
-    if questions_pagination_form.is_valid():
-        paginator = Paginator(questions.order_by(questions_pagination_form.cleaned_data['order']),
-                              questions_pagination_form.cleaned_data['limit'])
-        page = questions_pagination_form.cleaned_data['page']
+def render_pagination(request, template_name, context, pagination_form):
+    pagination = context['pagination']
+    if pagination_form.is_valid():
+        paginator = Paginator(pagination.order_by(pagination_form.cleaned_data['order']),
+                              pagination_form.cleaned_data['limit'])
+        page = pagination_form.cleaned_data['page']
     else:
-        paginator = Paginator(questions, questions_pagination_form.fields['limit'].initial)
-        page = questions_pagination_form.fields['page'].initial
+        paginator = Paginator(pagination, pagination_form.fields['limit'].initial)
+        page = pagination_form.fields['page'].initial
     try:
         context['pagination'] = paginator.page(page)
     except PageNotAnInteger:
         return HttpResponseNotFound()
     except EmptyPage:
         context['pagination'] = paginator.page(paginator.num_pages)
-    context['pagination_form'] = questions_pagination_form
+    context['pagination_form'] = pagination_form
     return render_with_cache(request, template_name, context)
 
 
 @require_GET
 def index(request):
-    return render_questions(request, 'index.html', {
+    return render_pagination(request, 'index.html', {
         'pagination': Question.objects.all()
-    })
+    }, QuestionsPaginationForm(request.GET or None))
 
 
 def signup(request):
@@ -117,24 +115,10 @@ def user(request, user_id):
 
 @require_GET
 def users(request):
-    users_pagination_form = UsersPaginationForm(request.GET or None)
-    if users_pagination_form.is_valid():
-        paginator = Paginator(User.objects.order_by(users_pagination_form.cleaned_data['order']),
-                              users_pagination_form.cleaned_data['limit'])
-        page = users_pagination_form.cleaned_data['page']
-    else:
-        paginator = Paginator(User.objects.all(), users_pagination_form.fields['limit'].initial)
-        page = users_pagination_form.fields['page'].initial
-    try:
-        users_ = paginator.page(page)
-    except PageNotAnInteger:
-        return HttpResponseNotFound()
-    except EmptyPage:
-        users_ = paginator.page(paginator.num_pages)
-    return render_with_cache(request, 'users.html', {
-        'pagination_form': users_pagination_form,
-        'pagination': users_
-    })
+    return render_pagination(request, 'users.html', {
+        'pagination_form': UsersPaginationForm,
+        'pagination': User.objects.all()
+    }, UsersPaginationForm(request.GET or None))
 
 
 @login_required
@@ -162,22 +146,7 @@ def question(request, question_id):
         answer_form = AnswerTheQuestionForm(initial={
             'question': question_id
         })
-    answers_pagination_form = AnswersPaginationForm(request.GET or None)
-    if answers_pagination_form.is_valid():
-        paginator = Paginator(question_.get_answers().order_by(answers_pagination_form.cleaned_data['order']),
-                              answers_pagination_form.cleaned_data['limit'])
-        page = answers_pagination_form.cleaned_data['page']
-    else:
-        paginator = Paginator(question_.get_answers().order_by(answers_pagination_form.fields['order'].initial),
-                              answers_pagination_form.fields['limit'].initial)
-        page = answers_pagination_form.fields['page'].initial
-    try:
-        answers = paginator.page(page)
-    except PageNotAnInteger:
-        return HttpResponseNotFound()
-    except EmptyPage:
-        answers = paginator.page(paginator.num_pages)
-    return render_with_cache(request, 'question.html', {
+    return render_pagination(request, 'question.html', {
         'question': question_,
         'question_rating_form': QuestionRatingForm(initial={
             'question': question_id
@@ -186,10 +155,8 @@ def question(request, question_id):
             'question': question_id
         }),
         'answer_form': answer_form,
-        'pagination_form': answers_pagination_form,
-        'pagination': answers
-        # 'comment_to_answer_form': CommentToAnswerForm()
-    })
+        'pagination': question_.get_answers()
+    }, AnswersPaginationForm(request.GET or None))
 
 
 @login_required
@@ -230,14 +197,14 @@ def ajax_rate_question(request):
 
 @require_GET
 def top(request):
-    return render_questions(request, 'top.html', {
+    return render_pagination(request, 'top.html', {
         'pagination': cache.get('top_questions')
-    })
+    }, QuestionsPaginationForm(request.GET or None))
 
 
 @require_GET
 def tag(request, tag_name):
-    return render_questions(request, 'tag.html', {
+    return render_pagination(request, 'tag.html', {
         'tag_name': tag_name,
         'pagination': Question.objects.get_by_tag(get_object_or_404(QuestionTag, name=tag_name))
-    })
+    }, QuestionsPaginationForm(request.GET or None))
