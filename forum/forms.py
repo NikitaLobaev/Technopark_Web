@@ -1,11 +1,8 @@
-from django import forms
-from django.contrib.auth.forms import (AuthenticationForm, PasswordChangeForm,
-                                       UserCreationForm)
-from django.forms import (HiddenInput, ModelForm, PasswordInput,
-                          SelectMultiple, Textarea, TextInput)
+from django.contrib.auth.forms import (AuthenticationForm, PasswordChangeForm, UserCreationForm)
+from django.forms import (HiddenInput, ModelForm, PasswordInput, SelectMultiple, Textarea, TextInput, Form, ChoiceField,
+                          Select, IntegerField, NumberInput)
 
-from forum.models import (Answer, CommentToQuestion, Question, QuestionLike,
-                          User)
+from forum.models import (Answer, CommentToQuestion, Question, QuestionLike, User)
 
 
 class AuthFormMeta:
@@ -145,19 +142,19 @@ class CommentToQuestionForm(ModelForm):
         }
 
 
-class QuestionsPaginationForm(forms.Form):
-    order = forms.ChoiceField(widget=forms.Select(attrs={
+class QuestionsPaginationForm(Form):
+    order = ChoiceField(widget=Select(attrs={
         'class': 'form-control',
         'onchange': 'this.form.submit()'
     }), choices=[('-pub_date', 'дате (по убыванию)'), ('pub_date', 'дате (по возрастанию)'),
                  ('-rating', 'рейтингу (по убыванию)'), ('rating', 'рейтингу (по возрастанию)'),
                  ('-title', 'заголовку (по убыванию)'), ('title', 'заголовку (по возрастанию)')],
         initial='-pub_date', label='Сортировать по', required=False)
-    limit = forms.ChoiceField(widget=forms.Select(attrs={
+    limit = ChoiceField(widget=Select(attrs={
         'class': 'form-control',
         'onchange': 'this.form.submit()'
     }), choices=[('3', '3'), ('10', '10'), ('20', '20')], initial='3', label='Кол-во на страницу', required=True)
-    page = forms.IntegerField(widget=forms.NumberInput(attrs={
+    page = IntegerField(widget=NumberInput(attrs={
         'class': 'form-control',
         'onchange': 'this.form.submit()'
     }), initial=1, label='Номер страницы', min_value=1, required=False)
