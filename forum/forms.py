@@ -7,21 +7,15 @@ from forum.models import (Answer, CommentToQuestion, Question, QuestionLike, Use
 
 class AuthFormMeta:
     labels = {
-        'username': 'Логин',
-        'password': 'Пароль',
+        'avatar': 'Аватар',
         'email': 'Email',
         'first_name': 'Имя',
         'last_name': 'Фамилия',
-        'avatar': 'Аватар'
+        'password': 'Пароль',
+        'username': 'Логин'
     }
     model = User
     widgets = {
-        'username': TextInput(attrs={
-            'class': 'form-control'
-        }),
-        'password': PasswordInput(attrs={
-            'class': 'form-control'
-        }),
         'email': TextInput(attrs={
             'class': 'form-control'
         }),
@@ -30,6 +24,18 @@ class AuthFormMeta:
         }),
         'last_name': TextInput(attrs={
             'class': 'form-control'
+        }),
+        'password': PasswordInput(attrs={
+            'class': 'form-control'
+        }),
+        'password1': PasswordInput(attrs={
+            'class': 'form-control'
+        }),
+        'password2': PasswordInput(attrs={
+            'class': 'form-control'
+        }),
+        'username': TextInput(attrs={
+            'class': 'form-control'
         })
     }
 
@@ -37,7 +43,7 @@ class AuthFormMeta:
 class SignupForm(UserCreationForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['password1'].widget.attrs = self.fields['password2'].widget.attrs = {
+        self.fields['password1'].widget.attrs = self.fields['password2'].widget.attrs = {  # TODO: плохо задаются стили
             'class': 'form-control'
         }
         self.fields['avatar'].widget.attrs = {
@@ -45,7 +51,7 @@ class SignupForm(UserCreationForm):
         }
     
     class Meta(AuthFormMeta):
-        fields = ['username', 'email', 'first_name', 'last_name', 'avatar']
+        fields = ['avatar', 'email', 'first_name', 'last_name', 'username']
 
 
 class LoginForm(AuthenticationForm):
@@ -57,7 +63,7 @@ class LoginForm(AuthenticationForm):
         }
     
     class Meta(AuthFormMeta):
-        fields = ['username', 'password']
+        fields = ['password', 'username']
 
 
 class EditProfileForm(ModelForm):
@@ -85,21 +91,21 @@ class EditPasswordForm(PasswordChangeForm):
 
 class AskQuestionForm(ModelForm):
     class Meta:
-        model = Question
-        fields = ['title', 'text', 'tags']
+        fields = ['tags', 'text', 'title']
         labels = {
-            'title': 'Заголовок',
+            'tags': 'Теги',
             'text': 'Тело',
-            'tags': 'Теги'
+            'title': 'Заголовок',
         }
+        model = Question
         widgets = {
-            'title': TextInput(attrs={
+            'tags': SelectMultiple(attrs={
                 'class': 'form-control'
             }),
             'text': TextInput(attrs={
                 'class': 'form-control'
             }),
-            'tags': SelectMultiple(attrs={
+            'title': TextInput(attrs={
                 'class': 'form-control'
             })
         }
@@ -113,11 +119,11 @@ class QuestionRatingForm(ModelForm):
 
 class AnswerTheQuestionForm(ModelForm):
     class Meta:
-        model = Answer
         fields = ['text']
         labels = {
             'text': 'Ответ'
         }
+        model = Answer
         widgets = {
             'text': Textarea(attrs={
                 'class': 'form-control',
@@ -128,11 +134,11 @@ class AnswerTheQuestionForm(ModelForm):
 
 class CommentToQuestionForm(ModelForm):
     class Meta:
-        model = CommentToQuestion
         fields = ['question', 'text']
         labels = {
             'text': 'Ответ'
         }
+        model = CommentToQuestion
         widgets = {
             'question': HiddenInput(),
             'text': Textarea(attrs={
