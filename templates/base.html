@@ -91,8 +91,7 @@
             {% for user in top_users %}
               <li>
                 <a href="{% url 'forum:user' user.id %}">
-                  <img alt="Аватар пользователя" class="rounded-circle" src="{{ user.avatar.url }}"
-                       style="width: 64px; height: 64px;">
+                  <img alt="Аватар пользователя" class="rounded-circle avatar64" src="{{ user.avatar.url }}">
                 </a>
                 <a href="{% url 'forum:user' user.id %}" style="text-align: center;">{{ user.username }}</a>
               </li>

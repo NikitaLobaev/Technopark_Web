@@ -15,8 +15,7 @@
     Задан {{ question.pub_date }} пользователем
     <a href="{% url 'forum:user' question.author.id %}">{{ question.author }}</a>
     <a href="{% url 'forum:user' question.author.id %}">
-      <img alt="Аватар пользователя" class="ml-2 rounded-circle" src="{{ question.author.avatar.url }}"
-           style="width: 32px; height: 32px;">
+      <img alt="Аватар пользователя" class="ml-2 rounded-circle avatar32" src="{{ question.author.avatar.url }}">
     </a>
     <span class="fa fa-thumbs-down" id="question_dislike" onclick="ajax_rate_question(false)"
           style="margin-right: 10px;"></span>
@@ -103,8 +102,7 @@
       </div>
       {% for comment in answer.get_comments %}
         <div class="media mb-4">
-          <img alt="Аватар пользователя" class="d-flex mr-3 rounded-circle" src="{{ comment.author.avatar.url }}"
-               style="width: 64px; height: 64px;">
+          <img alt="Аватар пользователя" class="d-flex mr-3 rounded-circle avatar64" src="{{ comment.author.avatar.url }}">
           <div class="media-body">
             <h5 class="mt-0">
               <a href="{% url 'forum:user' comment.author.id %}">{{ comment.author }}</a>

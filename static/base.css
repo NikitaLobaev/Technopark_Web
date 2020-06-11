@@ -14,6 +14,14 @@ img.avatar {
 	min-height: 128px;
 	min-width: 128px;
 }
+img.avatar64 {
+	height: 64px;
+	width: 64px;
+}
+img.avatar32 {
+	height: 32px;
+	width: 32px;
+}
 .fa {
 	cursor: pointer;
 	float: right;
