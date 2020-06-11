@@ -7,8 +7,10 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_GET, require_POST
 
-from forum.forms import (AnswersPaginationForm, AnswerTheQuestionForm, AskQuestionForm, CommentToQuestionForm,
-                         EditPasswordForm, EditProfileForm, LoginForm, QuestionsPaginationForm, QuestionRatingForm,
+from forum.forms import (AnswersPaginationForm, AnswerTheQuestionForm,
+                         AskQuestionForm, CommentToQuestionForm,
+                         EditPasswordForm, EditProfileForm, LoginForm,
+                         QuestionRatingForm, QuestionsPaginationForm,
                          SignupForm, UsersPaginationForm)
 from forum.models import Answer, CommentToQuestion, Question, QuestionTag, User
 
@@ -151,9 +153,7 @@ def question(request, question_id):
         'question_rating_form': QuestionRatingForm(initial={
             'question': question_id
         }),
-        'comment_to_question_form': CommentToQuestionForm(initial={
-            'question': question_id
-        }),
+        'comment_to_question_form': CommentToQuestionForm(),
         'answer_form': answer_form,
         'pagination': question_.get_answers()
     }, AnswersPaginationForm(request.GET or None))

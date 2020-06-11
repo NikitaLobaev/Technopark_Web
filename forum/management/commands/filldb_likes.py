@@ -3,7 +3,7 @@ from random import randrange
 
 from django.core.management.base import BaseCommand, CommandError
 
-from forum.models import Answer, AnswerLike, User, Question, QuestionLike
+from forum.models import Answer, AnswerLike, Question, QuestionLike, User
 
 
 class Command(BaseCommand):

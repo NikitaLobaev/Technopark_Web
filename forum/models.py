@@ -198,7 +198,7 @@ class AnswerLike(Like):
 class Comment(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     pub_date = models.DateTimeField(default=now, blank=True)
-    text = models.CharField(max_length=256)
+    text = models.TextField(max_length=1000)
     
     class Meta:
         abstract = True

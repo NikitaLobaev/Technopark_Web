@@ -1,57 +1,33 @@
-from django.contrib.auth.forms import (AuthenticationForm, PasswordChangeForm, UserCreationForm)
-from django.forms import (HiddenInput, ModelForm, PasswordInput, SelectMultiple, Textarea, TextInput, Form, ChoiceField,
-                          Select, IntegerField, NumberInput)
+from django import forms
+from django.contrib.auth.forms import (AuthenticationForm, PasswordChangeForm,
+                                       UserCreationForm)
 
-from forum.models import (Answer, CommentToQuestion, Question, QuestionLike, User)
-
-
-class AuthFormMeta:
-    labels = {
-        'avatar': 'Аватар',
-        'email': 'Email',
-        'first_name': 'Имя',
-        'last_name': 'Фамилия',
-        'password': 'Пароль',
-        'username': 'Логин'
-    }
-    model = User
-    widgets = {
-        'email': TextInput(attrs={
-            'class': 'form-control'
-        }),
-        'first_name': TextInput(attrs={
-            'class': 'form-control'
-        }),
-        'last_name': TextInput(attrs={
-            'class': 'form-control'
-        }),
-        'password': PasswordInput(attrs={
-            'class': 'form-control'
-        }),
-        'password1': PasswordInput(attrs={
-            'class': 'form-control'
-        }),
-        'password2': PasswordInput(attrs={
-            'class': 'form-control'
-        }),
-        'username': TextInput(attrs={
-            'class': 'form-control'
-        })
-    }
+from forum.models import (Answer, CommentToQuestion, Question, QuestionLike,
+                          User)
 
 
 class SignupForm(UserCreationForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['password1'].widget.attrs = self.fields['password2'].widget.attrs = {
+        self.fields['email'].widget.attrs = self.fields['first_name'].widget.attrs = \
+            self.fields['last_name'].widget.attrs = self.fields['username'].widget.attrs = \
+            self.fields['password1'].widget.attrs = self.fields['password2'].widget.attrs = {
             'class': 'form-control'
         }
         self.fields['avatar'].widget.attrs = {
             'class': 'form-control-file'
         }
     
-    class Meta(AuthFormMeta):
-        fields = ['avatar', 'email', 'first_name', 'last_name', 'username']
+    class Meta:
+        fields = ['avatar', 'email', 'username', 'first_name', 'last_name']
+        labels = {
+            'avatar': 'Аватар',
+            'email': 'Email',
+            'first_name': 'Имя',
+            'last_name': 'Фамилия',
+            'username': 'Логин'
+        }
+        model = User
 
 
 class LoginForm(AuthenticationForm):
@@ -62,19 +38,28 @@ class LoginForm(AuthenticationForm):
             'class': 'form-control'
         }
     
-    class Meta(AuthFormMeta):
-        fields = ['password', 'username']
+    class Meta:
+        fields = ['username', 'password']
+        labels = {
+            'password': 'Пароль',
+            'username': 'Логин'
+        }
+        model = User
 
 
-class EditProfileForm(ModelForm):
+class EditProfileForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields['email'].widget.attrs = self.fields['first_name'].widget.attrs = \
+            self.fields['last_name'].widget.attrs = self.fields['username'].widget.attrs = {
+            'class': 'form-control'
+        }
         self.fields['avatar'].widget.attrs = {
             'class': 'form-control-file'
         }
     
-    class Meta(AuthFormMeta):
-        fields = ['avatar', 'username', 'email', 'first_name', 'last_name']
+    class Meta(SignupForm.Meta):
+        pass
 
 
 class EditPasswordForm(PasswordChangeForm):
@@ -84,83 +69,84 @@ class EditPasswordForm(PasswordChangeForm):
             self.fields['new_password2'].widget.attrs = {
             'class': 'form-control'
         }
+
+
+class AskQuestionForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['title'].widget.attrs = self.fields['text'].widget.attrs = \
+            self.fields['tags'].widget.attrs = {
+            'class': 'form-control'
+        }
     
-    class Meta(AuthFormMeta):
-        fields = '__all__'
-
-
-class AskQuestionForm(ModelForm):
     class Meta:
-        fields = ['tags', 'text', 'title']
+        fields = ['title', 'text', 'tags']
         labels = {
             'tags': 'Теги',
             'text': 'Тело',
             'title': 'Заголовок',
         }
         model = Question
-        widgets = {
-            'tags': SelectMultiple(attrs={
-                'class': 'form-control'
-            }),
-            'text': TextInput(attrs={
-                'class': 'form-control'
-            }),
-            'title': TextInput(attrs={
-                'class': 'form-control'
-            })
+
+
+class QuestionRatingForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['question'].widget.attrs = {  # TODO: возможно, не нужно здесь поле question...
+            'class': 'form-control',
+            'rows': '6'
         }
-
-
-class QuestionRatingForm(ModelForm):
+    
     class Meta:
-        fields = ['question', 'like']
+        fields = ['like', 'question']
         model = QuestionLike
 
 
-class AnswerTheQuestionForm(ModelForm):
+class AnswerTheQuestionForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['text'].widget.attrs = {
+            'class': 'form-control',
+            'rows': '6'
+        }
+    
     class Meta:
         fields = ['text']
         labels = {
             'text': 'Ответ'
         }
         model = Answer
-        widgets = {
-            'text': Textarea(attrs={
-                'class': 'form-control',
-                'rows': '6'
-            })
+
+
+class CommentToQuestionForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['text'].widget.attrs = {
+            'class': 'form-control',
+            'rows': '3'
         }
-
-
-class CommentToQuestionForm(ModelForm):
+    
     class Meta:
-        fields = ['question', 'text']
+        fields = ['text']
         labels = {
             'text': 'Ответ'
         }
         model = CommentToQuestion
-        widgets = {
-            'question': HiddenInput(),
-            'text': Textarea(attrs={
-                'class': 'form-control',
-                'rows': '3'
-            })
-        }
 
 
-class QuestionsPaginationForm(Form):
-    order = ChoiceField(widget=Select(attrs={
+class QuestionsPaginationForm(forms.Form):
+    order = forms.ChoiceField(widget=forms.Select(attrs={
         'class': 'form-control',
         'onchange': 'this.form.submit()'
     }), choices=[('-pub_date', 'дате (по убыванию)'), ('pub_date', 'дате (по возрастанию)'),
                  ('-rating', 'рейтингу (по убыванию)'), ('rating', 'рейтингу (по возрастанию)'),
                  ('-title', 'заголовку (по убыванию)'), ('title', 'заголовку (по возрастанию)')],
         initial='-pub_date', label='Сортировать по', required=False)
-    limit = ChoiceField(widget=Select(attrs={
+    limit = forms.ChoiceField(widget=forms.Select(attrs={
         'class': 'form-control',
         'onchange': 'this.form.submit()'
     }), choices=[('3', '3'), ('10', '10'), ('20', '20')], initial='3', label='Кол-во на страницу', required=True)
-    page = IntegerField(widget=NumberInput(attrs={
+    page = forms.IntegerField(widget=forms.NumberInput(attrs={
         'class': 'form-control',
         'onchange': 'this.form.submit()'
     }), initial=1, label='Номер страницы', min_value=1, required=False)
