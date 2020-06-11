@@ -25,13 +25,16 @@ class Command(BaseCommand):
                       [Answer.objects.all(), AnswerLike, min(questions_max_count, len(users)) + 1]]:
             for object_ in state[0]:
                 rating = 0
-                for i in random.sample(range(len(users)), randrange(0, state[3])):
+                for i in random.sample(range(len(users)), randrange(0, state[2])):
                     like = randrange(0, 2) == 1
                     if like:
                         rating += 1
                     else:
                         rating -= 1
-                    state[1].objects.create(object_, users[i], like)
+                    if state[1] == QuestionLike:
+                        QuestionLike.objects.create(author=users[i], like=like, question=object_)
+                    else:
+                        AnswerLike.objects.create(author=users[i], like=like, answer=object_)
                 object_.rating = rating
                 object_.save()
         print('filldb_likes: OK')

@@ -12,6 +12,5 @@ class Command(BaseCommand):
         call_command('filldb_answers', 3)
         call_command('filldb_commentstoquestions', 2)
         call_command('filldb_commentstoanswers', 2)
-        call_command('filldb_questionlikes', 30)
-        call_command('filldb_answerlikes', 10)
+        call_command('filldb_likes', 30, 10)
         print('filldb: OK')

@@ -24,7 +24,7 @@
     <span style="cursor: default; float: right; margin-right: 10px;">
       {% if question.rating > 0 %}
         <b class="text-success" id="question_rating">{{ question.rating }}</b>
-      {% else if question.rating < 0 %}
+      {% elif question.rating < 0 %}
         <b class="text-danger" id="question_rating">{{ question.rating }}</b>
       {% else %}
         <b id="question_rating">{{ question.rating }}</b>

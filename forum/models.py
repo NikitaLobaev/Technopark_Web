@@ -173,7 +173,6 @@ class Like(models.Model):
     
     class Meta:
         abstract = True
-        unique_together = ('author', 'like')
     
     def __int__(self):
         if self.like:
@@ -184,10 +183,16 @@ class Like(models.Model):
 
 class QuestionLike(Like):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    
+    class Meta:
+        unique_together = ('author', 'like', 'question')
 
 
 class AnswerLike(Like):
     answer = models.ForeignKey(Answer, on_delete=models.CASCADE)
+    
+    class Meta:
+        unique_together = ('author', 'like', 'answer')
 
 
 class Comment(models.Model):
