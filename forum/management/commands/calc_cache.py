@@ -9,4 +9,4 @@ class Command(BaseCommand):
         call_command('calc_top_tags', 10)
         call_command('calc_top_questions', 10)
         call_command('calc_top_users', 10)
-        print('calc: OK')
+        print('calc_cache: OK')

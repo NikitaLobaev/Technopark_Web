@@ -43,7 +43,7 @@ class AuthFormMeta:
 class SignupForm(UserCreationForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['password1'].widget.attrs = self.fields['password2'].widget.attrs = {  # TODO: плохо задаются стили
+        self.fields['password1'].widget.attrs = self.fields['password2'].widget.attrs = {
             'class': 'form-control'
         }
         self.fields['avatar'].widget.attrs = {

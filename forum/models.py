@@ -76,7 +76,7 @@ class Question(models.Model):
     objects = QuestionManager()
     answers_count = models.IntegerField(default=0)
     author = models.ForeignKey(User, on_delete=models.CASCADE)
-    pub_date = models.DateTimeField(default=now, blank=True)
+    pub_date = models.DateTimeField(blank=True, default=now)
     rating = models.IntegerField(default=0)
     tags = models.ManyToManyField(QuestionTag)
     text = models.TextField()
@@ -109,17 +109,17 @@ class Question(models.Model):
     def rating_add(self, user, like):
         like = QuestionLike.objects.create(author=user, like=like, question=self)
         if like:
-            self.rating = self.rating + 1
+            self.rating += 1
         else:
-            self.rating = self.rating - 1
+            self.rating -= 1
         self.save()
     
     def rating_remove(self, user):
         like = QuestionLike.objects.get(author=user, question=self)
         if like.like:
-            self.rating = self.rating - 1
+            self.rating -= 1
         else:
-            self.rating = self.rating + 1
+            self.rating += 1
         like.delete()
         self.save()
 
@@ -133,7 +133,7 @@ class Answer(models.Model):
     objects = AnswerManager()
     accepted = models.BooleanField(default=False)
     author = models.ForeignKey(User, on_delete=models.CASCADE)
-    pub_date = models.DateTimeField(default=now, blank=True)
+    pub_date = models.DateTimeField(blank=True, default=now)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     rating = models.IntegerField(default=0)
     text = models.TextField()
@@ -146,6 +146,25 @@ class Answer(models.Model):
     
     def get_comments(self):
         return CommentToAnswer.objects.get_by_answer(answer=self)
+
+
+class AcceptedAnswersManager(models.Manager):
+    def accept(self, question, answer):
+        answer.accepted = True
+        answer.save()
+        try:
+            accepted_answer = self.get(question=question)
+            accepted_answer.answer.accepted = False
+            accepted_answer.answer.save()
+            accepted_answer.answer = answer
+            accepted_answer.save()
+        except AcceptedAnswers.DoesNotExist:
+            self.create(question=question, answer=answer)
+
+
+class AcceptedAnswers(models.Model):
+    question = models.OneToOneField(Question, on_delete=models.CASCADE, primary_key=True)
+    answer = models.OneToOneField(Answer, on_delete=models.CASCADE)
 
 
 class Like(models.Model):
@@ -169,11 +188,6 @@ class QuestionLike(Like):
 
 class AnswerLike(Like):
     answer = models.ForeignKey(Answer, on_delete=models.CASCADE)
-
-
-class AnswerApply(models.Model):
-    answer = models.ForeignKey(Answer, on_delete=models.CASCADE)
-    question = models.OneToOneField(Question, on_delete=models.CASCADE)
 
 
 class Comment(models.Model):
