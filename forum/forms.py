@@ -178,6 +178,7 @@ class AnswersPaginationForm(QuestionsPaginationForm):
         super().__init__(*args, **kwargs)
         self.fields['order'].choices = [('-pub_date', 'дате (по убыванию)'), ('pub_date', 'дате (по возрастанию)'),
                                         ('-rating', 'рейтингу (по убыванию)'), ('rating', 'рейтингу (по возрастанию)')]
+        self.fields['order'].initial = '-rating'
 
 
 class UsersPaginationForm(QuestionsPaginationForm):
