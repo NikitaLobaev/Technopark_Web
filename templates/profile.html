@@ -4,7 +4,7 @@
 {% block content %}
 <div class="col-md-8">
   <h3 class="my-3">Пользователь <b>{{ request.user }}</b></h3>
-  <img alt="avatar" class="avatar" src="{{ request.user.avatar.url }}">
+  <img alt="avatar" class="avatar" src="{{ request.user.get_avatar_url }}">
   <form class="form-horizontal" enctype="multipart/form-data" method="post">
     {% csrf_token %}
     {{ edit_profile_form.as_p }}

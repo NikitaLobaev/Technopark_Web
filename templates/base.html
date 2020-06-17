@@ -35,7 +35,7 @@
     <div class="col-md-4">
       <div class="card my-4">
         {% if request.user.is_authenticated %}
-          <h5 class="card-header"><a href="{% url 'forum:profile' %}">{{ request.user.username }}</a></h5>
+          <h5 class="card-header"><a href="{% url 'forum:user' request.user.id %}">{{ request.user.username }}</a></h5>
         {% else %}
           <h5 class="card-header"><a href="{% url 'forum:login' %}">Вход в аккаунт</a></h5>
           <h5 class="card-header"><a href="{% url 'forum:signup' %}">Регистрация</a></h5>
@@ -91,7 +91,7 @@
             {% for user in top_users %}
               <li>
                 <a href="{% url 'forum:user' user.id %}">
-                  <img alt="Аватар пользователя" class="rounded-circle avatar64" src="{{ user.avatar.url }}">
+                  <img alt="Аватар пользователя" class="rounded-circle avatar64" src="{{ user.get_avatar_url }}">
                 </a>
                 <a href="{% url 'forum:user' user.id %}" style="text-align: center;">{{ user.username }}</a>
               </li>

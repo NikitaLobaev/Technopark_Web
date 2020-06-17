@@ -4,6 +4,7 @@ from datetime import timedelta
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.db import models
 from django.db.models import Count, Q
+from django.templatetags.static import static
 from django.utils.timezone import now
 
 
@@ -24,7 +25,7 @@ class User(AbstractUser):
         return os.path.join('avatar', str(self.id) + '_' + filename)
     
     answers_count = models.IntegerField(default=0)
-    avatar = models.ImageField(default='avatar/default.png', upload_to=upload_avatar_filename)
+    avatar = models.ImageField(blank=True, upload_to=upload_avatar_filename)
     email = models.EmailField(unique=True)
     questions_count = models.IntegerField(default=0)
     username = models.CharField(max_length=30, unique=True)
@@ -35,14 +36,20 @@ class User(AbstractUser):
     def __str__(self):
         return self.username
     
-    def question_added(self):
-        self.questions_count += 1
-        self.save()
-    
     def answer_added(self, question):
         question.answers_count += 1
         question.save()
         self.answers_count += 1
+        self.save()
+    
+    def get_avatar_url(self):
+        if self.avatar:
+            return self.avatar.url
+        else:
+            return static('default_avatar.png')
+    
+    def question_added(self):
+        self.questions_count += 1
         self.save()
 
 
