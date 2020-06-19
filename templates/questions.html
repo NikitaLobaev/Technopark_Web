@@ -3,7 +3,7 @@
 {% block content %}
 <div class="col-md-8">
   <h1 class="my-3">{% block content_header %}{% endblock %}</h1>
-  <form class="form-horizontal" id="pagination">
+  <form class="form-horizontal" id="pagination_form">
     {{ pagination_form.as_p }}
   </form>
   {% include 'pagination.html' %}

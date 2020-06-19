@@ -1,5 +1,6 @@
-const pagination_form_submit = page => {
-	let $form = $('form#pagination');
-	$('#id_page').val(page);
-	$form.submit();
+const $paginationForm = $("#pagination_form");
+const $paginationPage = $("#pagination_page");
+const paginationFormSubmit = page => {
+	$paginationPage.val(page);
+	$paginationForm.submit();
 };

@@ -167,6 +167,7 @@ class CommentToQuestionForm(forms.ModelForm):
 class QuestionsPaginationForm(forms.Form):
     order = forms.ChoiceField(widget=forms.Select(attrs={
         'class': 'form-control',
+        'id': 'pagination_order',
         'onchange': 'this.form.submit()'
     }), choices=[('-pub_date', 'дате (по убыванию)'), ('pub_date', 'дате (по возрастанию)'),
                  ('-rating', 'рейтингу (по убыванию)'), ('rating', 'рейтингу (по возрастанию)'),
@@ -174,10 +175,12 @@ class QuestionsPaginationForm(forms.Form):
         initial='-pub_date', label='Сортировать по', required=False)
     limit = forms.ChoiceField(widget=forms.Select(attrs={
         'class': 'form-control',
+        'id': 'pagination_limit',
         'onchange': 'this.form.submit()'
     }), choices=[('3', '3'), ('10', '10'), ('20', '20')], initial='3', label='Кол-во на страницу', required=True)
     page = forms.IntegerField(widget=forms.NumberInput(attrs={
         'class': 'form-control',
+        'id': 'pagination_page',
         'onchange': 'this.form.submit()'
     }), initial=1, label='Номер страницы', min_value=1, required=False)
     

@@ -1,24 +1,17 @@
-const $questionRatingPictureDislike = $("#question_rating_picture_dislike");
-const $questionRatingPictureLike = $("#question_rating_picture_like");
-const $questionRatingLike = $("#question_rating_like");
 const $questionRating = $("#question_rating");
 const $questionRatingForm = $("#question_rating_form");
+const $questionRatingLike = $("#question_rating_like");
+const $questionRatingPictureDislike = $("#question_rating_picture_dislike");
+const $questionRatingPictureLike = $("#question_rating_picture_like");
 const $questionRatingRated = $("#question_rating_rated");
-const csrfmiddlewaretoken = Cookies.get("csrftoken");
+const csrftoken = Cookies.get("csrftoken");
 $.ajaxSetup({
 	beforeSend: (xhr, settings) => {
 		if (!(/^(GET|HEAD|OPTIONS|TRACE)$/.test(settings.type)) && !this.crossDomain) {
-			xhr.setRequestHeader("X-CSRFToken", csrfmiddlewaretoken);
+			xhr.setRequestHeader("X-CSRFToken", csrftoken);
 		}
 	}
 });
-if ($questionRatingRated.prop("checked")) {
-	if ($questionRatingLike.prop("checked")) {
-		$questionRatingPictureLike.toggleClass("text-success");
-	} else {
-		$questionRatingPictureDislike.toggleClass("text-danger");
-	}
-}
 const ajaxQuestionRating = () => $.ajax({
 	error: response => {
 		alert("Во время AJAX-запроса произошла ошибка");
@@ -27,6 +20,13 @@ const ajaxQuestionRating = () => $.ajax({
 	data: $questionRatingForm.serialize(),
 	type: "POST"
 });
+if ($questionRatingRated.prop("checked")) {
+	if ($questionRatingLike.prop("checked")) {
+		$questionRatingPictureLike.toggleClass("text-success");
+	} else {
+		$questionRatingPictureDislike.toggleClass("text-danger");
+	}
+}
 $questionRatingPictureDislike.on("click", () => {
 	$questionRatingPictureDislike.toggleClass("text-danger");
 	const rating = parseInt($questionRating.text(), 10);
@@ -57,7 +57,6 @@ $questionRatingPictureDislike.on("click", () => {
 		ratingIsNew = false;
 	}
 	$questionRatingLike.prop("checked", false);
-	console.log($questionRatingForm.serialize());
 	ajaxQuestionRating();
 	$questionRatingRated.prop("checked", ratingIsNew);
 });
@@ -91,7 +90,6 @@ $questionRatingPictureLike.on("click", () => {
 		ratingIsNew = false;
 	}
 	$questionRatingLike.prop("checked", true);
-	console.log($questionRatingForm.serialize());
 	ajaxQuestionRating();
 	$questionRatingRated.prop("checked", ratingIsNew);
 });

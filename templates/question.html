@@ -85,7 +85,7 @@
   </div>
   {% if question.answers_count > 0 %}
     <h3 class="mt-4">Ответы ({{ question.answers_count }})</h3>
-    <form class="form-horizontal" id="pagination">
+    <form class="form-horizontal" id="pagination_form">
       {{ pagination_form.as_p }}
     </form>
     {% include 'pagination.html' %}
