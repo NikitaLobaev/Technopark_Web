@@ -74,8 +74,7 @@ class EditPasswordForm(PasswordChangeForm):
 class AskQuestionForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['title'].widget.attrs = self.fields['text'].widget.attrs = \
-            self.fields['tags'].widget.attrs = {
+        self.fields['title'].widget.attrs = self.fields['text'].widget.attrs = self.fields['tags'].widget.attrs = {
             'class': 'form-control'
         }
     
@@ -90,16 +89,47 @@ class AskQuestionForm(forms.ModelForm):
 
 
 class QuestionRatingForm(forms.ModelForm):
+    rated = forms.BooleanField(initial=False, required=False)
+    
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['question'].widget.attrs = {  # TODO: возможно, не нужно здесь поле question...
-            'class': 'form-control',
-            'rows': '6'
+        self.fields['like'].widget.attrs = {
+            'id': 'question_rating_like'
+        }
+        self.fields['rated'].widget.attrs = {
+            'id': 'question_rating_rated'
         }
     
     class Meta:
-        fields = ['like', 'question']
+        fields = ('like',)
         model = QuestionLike
+    
+    def save(self, commit=True):
+        if self.cleaned_data['rated']:
+            if 'like' in self.changed_data:  # заменить лайк/дизлайк на дизлайк/лайк
+                question_like = super().save()
+                if question_like.like:
+                    question_like.question.rating += 2
+                else:
+                    question_like.question.rating -= 2
+                question_like.question.save()
+                return question_like
+            else:  # убрать лайк/дизлайк
+                if self.instance.like:
+                    self.instance.question.rating -= 1
+                else:
+                    self.instance.question.rating += 1
+                self.instance.question.save()
+                self.instance.delete()
+                return None
+        else:  # поставить новый лайк/дизлайк
+            question_like = super().save()
+            if question_like.like:
+                question_like.question.rating += 1
+            else:
+                question_like.question.rating -= 1
+            question_like.question.save()
+            return question_like
 
 
 class AnswerTheQuestionForm(forms.ModelForm):

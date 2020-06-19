@@ -1,6 +1,6 @@
 from django.contrib.auth import login, authenticate, logout
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.http import HttpResponseNotFound, HttpResponseForbidden
+from django.http import HttpResponseNotFound, HttpResponseForbidden, HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.views import View
@@ -9,7 +9,7 @@ from django.core.cache import cache
 
 from forum.forms import SignupForm, LoginForm, EditProfileForm, EditPasswordForm, UsersPaginationForm, \
     AskQuestionForm, QuestionsPaginationForm, AnswerTheQuestionForm, QuestionRatingForm, CommentToQuestionForm
-from forum.models import User, Question, QuestionTag, Answer
+from forum.models import User, Question, QuestionTag, Answer, QuestionLike
 
 
 class BaseView(View):  # TODO: sort all imports!!!
@@ -90,14 +90,14 @@ class LoginView(BaseView):
 
 
 class UserView(BaseView):
-    template_name = 'user.html'
+    template_name = 'profile.html'
     
     def get(self, request, **kwargs):
         if request.user.id == kwargs['id']:
-            self.template_name = 'profile.html'
             kwargs['edit_profile_form'] = EditProfileForm(instance=request.user)
             kwargs['edit_password_form'] = EditPasswordForm(user=request.user)
         else:
+            self.template_name = 'user.html'
             kwargs['user'] = get_object_or_404(User, id=kwargs['id'])
         return super().get(request, **kwargs)
     
@@ -151,6 +151,29 @@ class AskQuestionView(BaseView):
 class QuestionView(PaginationView):
     template_name = 'question.html'
     
+    def ajax(self, request, **kwargs):  # TODO: maybe make this method static?
+        id_ = kwargs['id']
+        if request.POST.get('text'):
+            if request.POST.get('answer_id'):  # комментарий к ответу
+                pass
+            else:  # комментарий к вопросу
+                pass
+        elif request.POST.get('answer_id'):  # лайк на ответ
+            pass
+        else:  # лайк на вопрос
+            try:
+                question_rating_form = QuestionRatingForm(data=request.POST, initial={
+                    'rated': True
+                }, instance=QuestionLike.objects.get(author=request.user, question_id=id_))
+            except QuestionLike.DoesNotExist:
+                question_rating_form = QuestionRatingForm(data=request.POST,
+                                                          instance=QuestionLike(author=request.user, question_id=id_))
+            if question_rating_form.is_valid():
+                question_rating_form.save()
+            else:
+                return HttpResponse(question_rating_form.errors.as_text())
+        return HttpResponse()
+    
     def get(self, request, **kwargs):
         id_ = kwargs['id']
         question = get_object_or_404(Question, id=id_)
@@ -158,31 +181,36 @@ class QuestionView(PaginationView):
             'question': id_
         })
         kwargs['comment_to_question_form'] = CommentToQuestionForm()
+        return self.get_(request, id_, question, **kwargs)
+    
+    def get_(self, request, id_, question, **kwargs):  # чтобы избавиться от дубликата кода
         kwargs['pagination'] = question.get_answers()
         kwargs['question'] = question
-        kwargs['question_rating_form'] = QuestionRatingForm(initial={
-            'question': id_
-        })
+        try:
+            question_like = QuestionLike.objects.get(author=request.user, question_id=id_)
+            kwargs['question_rating_form'] = QuestionRatingForm(initial={
+                'rated': True
+            }, instance=question_like)
+        except QuestionLike.DoesNotExist:
+            kwargs['question_rating_form'] = QuestionRatingForm()
         return super().get(request, **kwargs)
     
     def post(self, request, **kwargs):
         id_ = kwargs['id']
-        question = get_object_or_404(Question, id=id_)
         if not request.user.is_authenticated:
             response = redirect('forum:login')
             response['Location'] += '?next=' + reverse('forum:question', id_)
             return response
+        if request.is_ajax():
+            return self.ajax(request, **kwargs)
+        question = get_object_or_404(Question, id=id_)
         answer_form = AnswerTheQuestionForm(data=request.POST, instance=Answer(author=request.user, question_id=id_))
         if answer_form.is_valid():
             answer = answer_form.save()
             answer.author.answer_added(question)
         kwargs['answer_form'] = answer_form
         kwargs['comment_to_question_form'] = CommentToQuestionForm()
-        kwargs['pagination'] = question.get_answers()
-        kwargs['question_rating_form'] = QuestionRatingForm(initial={
-            'question': id_
-        })
-        return super().get(request, **kwargs)
+        return self.get_(request, id_, question, **kwargs)
 
 
 class TopQuestionsView(PaginationView):

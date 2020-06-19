@@ -4,6 +4,8 @@ import os
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+CSRF_COOKIE_NAME = 'csrftoken'
+
 SECRET_KEY = 't=znvrz0yynq8=v)33&6dwl13pv5f=%%&a-l^oxdj34_qi(6xd'
 
 DEBUG = True

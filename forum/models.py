@@ -110,25 +110,25 @@ class Question(models.Model):
     def get_answers(self):
         return Answer.objects.get_by_question(question=self)
     
-    def was_rated(self, user):
-        return QuestionLike.objects.filter(author=user, question=self)
-    
-    def rating_add(self, user, like):
-        like = QuestionLike.objects.create(author=user, like=like, question=self)
-        if like:
-            self.rating += 1
-        else:
-            self.rating -= 1
-        self.save()
-    
-    def rating_remove(self, user):
-        like = QuestionLike.objects.get(author=user, question=self)
-        if like.like:
-            self.rating -= 1
-        else:
-            self.rating += 1
-        like.delete()
-        self.save()
+    # def was_rated(self, user):
+    #     return QuestionLike.objects.filter(author=user, question=self)
+    #
+    # def rating_add(self, user, like):
+    #     like = QuestionLike.objects.create(author=user, like=like, question=self)
+    #     if like:
+    #         self.rating += 1
+    #     else:
+    #         self.rating -= 1
+    #     self.save()
+    #
+    # def rating_remove(self, user):
+    #     like = QuestionLike.objects.get(author=user, question=self)
+    #     if like.like:
+    #         self.rating -= 1
+    #     else:
+    #         self.rating += 1
+    #     like.delete()
+    #     self.save()
 
 
 class AnswerManager(models.Manager):
@@ -170,11 +170,22 @@ class AcceptedAnswersManager(models.Manager):
 
 
 class AcceptedAnswers(models.Model):
+    objects = AcceptedAnswersManager()
     question = models.OneToOneField(Question, on_delete=models.CASCADE, primary_key=True)
     answer = models.OneToOneField(Answer, on_delete=models.CASCADE)
 
 
+class LikeManager(models.Manager):
+    # def get_or_none(self, **kwargs):
+    #     try:
+    #         return self.get(**kwargs)
+    #     except (QuestionLike.DoesNotExist, AnswerLike.DoesNotExist):
+    #         return None
+    pass
+
+
 class Like(models.Model):
+    objects = LikeManager()
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     like = models.BooleanField(default=True)
     
