@@ -3,7 +3,7 @@ from django.contrib.auth.forms import (AuthenticationForm, PasswordChangeForm,
                                        UserCreationForm)
 
 from forum.models import (Answer, CommentToQuestion, Question, QuestionLike,
-                          User)
+                          User, CommentToAnswer)
 
 
 class SignupForm(UserCreationForm):
@@ -115,12 +115,12 @@ class QuestionRatingForm(forms.ModelForm):
                 question_like.question.save()
                 return question_like
             else:  # убрать лайк/дизлайк
+                self.instance.delete()
                 if self.instance.like:
                     self.instance.question.rating -= 1
                 else:
                     self.instance.question.rating += 1
                 self.instance.question.save()
-                self.instance.delete()
                 return None
         else:  # поставить новый лайк/дизлайк
             question_like = super().save()
@@ -153,15 +153,19 @@ class CommentToQuestionForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['text'].widget.attrs = {
             'class': 'form-control',
+            'id': 'question_comment_text',
             'rows': '3'
         }
     
     class Meta:
         fields = ['text']
-        labels = {
-            'text': 'Ответ'
-        }
         model = CommentToQuestion
+
+
+class CommentToAnswerForm(CommentToQuestionForm):
+    class Meta:
+        fields = ['text']
+        model = CommentToAnswer
 
 
 class QuestionsPaginationForm(forms.Form):

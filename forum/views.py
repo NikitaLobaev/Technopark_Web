@@ -8,8 +8,9 @@ from django.views.generic import RedirectView
 from django.core.cache import cache
 
 from forum.forms import SignupForm, LoginForm, EditProfileForm, EditPasswordForm, UsersPaginationForm, \
-    AskQuestionForm, QuestionsPaginationForm, AnswerTheQuestionForm, QuestionRatingForm, CommentToQuestionForm
-from forum.models import User, Question, QuestionTag, Answer, QuestionLike
+    AskQuestionForm, QuestionsPaginationForm, AnswerTheQuestionForm, QuestionRatingForm, CommentToQuestionForm, \
+    CommentToAnswerForm
+from forum.models import User, Question, QuestionTag, Answer, QuestionLike, CommentToQuestion, CommentToAnswer
 
 
 class BaseView(View):  # TODO: sort all imports!!!
@@ -157,10 +158,11 @@ class QuestionView(PaginationView):
         kwargs['answer_form'] = AnswerTheQuestionForm(initial={
             'question': id_
         })
-        kwargs['comment_to_question_form'] = CommentToQuestionForm()
         return self.get_(request, id_, question, **kwargs)
     
     def get_(self, request, id_, question, **kwargs):  # чтобы избавиться от дубликата кода
+        kwargs['comment_to_answer_form'] = CommentToAnswerForm()
+        kwargs['comment_to_question_form'] = CommentToQuestionForm()
         kwargs['pagination'] = question.get_answers()
         kwargs['question'] = question
         try:
@@ -186,7 +188,6 @@ class QuestionView(PaginationView):
             answer = answer_form.save()
             answer.author.answer_added(question)
         kwargs['answer_form'] = answer_form
-        kwargs['comment_to_question_form'] = CommentToQuestionForm()
         return self.get_(request, id_, question, **kwargs)
 
 
@@ -213,9 +214,21 @@ def ajax_question(request, **kwargs):
     id_ = kwargs['id']
     if request.POST.get('text'):
         if request.POST.get('answer_id'):  # комментарий к ответу
-            pass
+            comment_to_answer_form = CommentToAnswerForm(
+                data=request.POST,
+                instance=CommentToAnswer(answer_id=request.POST['answer_id'], author=request.user))
+            if comment_to_answer_form.is_valid():
+                comment_to_answer_form.save()
+            else:
+                return HttpResponseForbidden(comment_to_answer_form.errors.as_text())
         else:  # комментарий к вопросу
-            pass
+            comment_to_question_form = CommentToQuestionForm(
+                data=request.POST,
+                instance=CommentToQuestion(author=request.user, question_id=id_))
+            if comment_to_question_form.is_valid():
+                comment_to_question_form.save()
+            else:
+                return HttpResponseForbidden(comment_to_question_form.errors.as_text())
     elif request.POST.get('answer_id'):  # лайк на ответ
         pass
     else:  # лайк на вопрос
@@ -224,10 +237,14 @@ def ajax_question(request, **kwargs):
                 'rated': True
             }, instance=QuestionLike.objects.get(author=request.user, question_id=id_))
         except QuestionLike.DoesNotExist:
-            question_rating_form = QuestionRatingForm(data=request.POST,
-                                                      instance=QuestionLike(author=request.user, question_id=id_))
+            question_rating_form = QuestionRatingForm(
+                data=request.POST,
+                instance=QuestionLike(author=request.user, question_id=id_))
         if question_rating_form.is_valid():
-            question_rating_form.save()
+            try:
+                question_rating_form.save()
+            except:
+                return HttpResponseForbidden('Хрен тебе, а не лайк!')
         else:
-            return HttpResponse(question_rating_form.errors.as_text())
+            return HttpResponseForbidden(question_rating_form.errors.as_text())
     return HttpResponse()

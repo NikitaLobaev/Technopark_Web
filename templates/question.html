@@ -33,7 +33,7 @@
     {{ question_rating_form }}
   </form>
   <hr>
-  <div id="comments_to_question">
+  <div id="question_comments">
     {% for comment in question.get_comments %}
       <div class="media mb-4">
         <a href="{% url 'forum:user' comment.author.id %}">
@@ -50,11 +50,12 @@
     {% endfor %}
   </div>
   <div class="card">
-    <form class="form-horizontal" id="ajax_comment_to_question" method="post">
-      {% csrf_token %}
+    <form class="form-horizontal" data-avatar-url="{{ request.user.get_avatar_url }}"
+          data-profile-name="{{ request.user }}" data-profile-url="{% url 'forum:user' request.user.id %}"
+          onsubmit="commentFormOnSubmit($(this), $('#question_comments')); return false;">
       {{ comment_to_question_form.question }}
       <h5 class="card-header">
-        <label for="{{ comment_to_question_form.text.id_for_label }}">Оставить комментарий:</label>
+        <label for="{{ comment_to_question_form.text.id_for_label }}">Оставить комментарий к вопросу:</label>
       </h5>
       <div class="card-body">
         {{ comment_to_question_form.non_field_errors }}
@@ -97,17 +98,38 @@
         <div class="card-footer text-muted">Ответ дан {{ answer.pub_date }} пользователем&nbsp;
           <a href="{% url 'forum:user' answer.author.id %}">{{ answer.author }}</a></div>
       </div>
-      {% for comment in answer.get_comments %}
-        <div class="media mb-4">
-          <img alt="Аватар пользователя" class="d-flex mr-3 rounded-circle avatar64" src="{{ comment.author.get_avatar_url }}">
-          <div class="media-body">
-            <h5 class="mt-0">
-              <a href="{% url 'forum:user' comment.author.id %}">{{ comment.author }}</a>
-            </h5>
-            {{ comment }}
+      <div id="answer_{{ answer.id }}_comments">
+        {% for comment in answer.get_comments %}
+          <div class="media mb-4">
+            <img alt="Аватар пользователя" class="d-flex mr-3 rounded-circle avatar64"
+                 src="{{ comment.author.get_avatar_url }}">
+            <div class="media-body">
+              <h5 class="mt-0">
+                <a href="{% url 'forum:user' comment.author.id %}">{{ comment.author }}</a>
+              </h5>
+              {{ comment }}
+            </div>
           </div>
-        </div>
-      {% endfor %}
+        {% endfor %}
+      </div>
+      <div class="card">
+        <form class="form-horizontal" data-avatar-url="{{ request.user.get_avatar_url }}"
+              data-profile-name="{{ request.user }}" data-profile-url="{% url 'forum:user' request.user.id %}"
+              onsubmit="commentFormOnSubmit($(this), $('#answer_{{ answer.id }}_comments')); return false;">
+          <input name="answer_id" type="hidden" value="{{ answer.id }}">
+          <h5 class="card-header">
+            <label for="{{ comment_to_answer_form.text.id_for_label }}">Оставить комментарий к ответу:</label>
+          </h5>
+          <div class="card-body">
+            {{ comment_to_answer_form.non_field_errors }}
+            {{ comment_to_answer_form.text.errors }}
+            <div class="form-group">
+              {{ comment_to_answer_form.text }}
+            </div>
+            <button class="btn btn-primary">Отправить</button>
+          </div>
+        </form>
+      </div>
       <hr>
     {% endfor %}
     {% include 'pagination.html' %}
@@ -118,7 +140,6 @@
 {% endblock %}
 {% block script %}
 <script src="{% static 'pagination.js' %}" type="text/javascript"></script>
-<script src="{% static 'js.cookie.min.mjs' %}" type="module"></script>
 <script src="{% static 'js.cookie.js' %}" type="text/javascript"></script>
 <script src="{% static 'question.js' %}" type="text/javascript"></script>
 {% endblock %}

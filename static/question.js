@@ -4,6 +4,7 @@ const $questionRatingLike = $("#question_rating_like");
 const $questionRatingPictureDislike = $("#question_rating_picture_dislike");
 const $questionRatingPictureLike = $("#question_rating_picture_like");
 const $questionRatingRated = $("#question_rating_rated");
+
 const csrftoken = Cookies.get("csrftoken");
 $.ajaxSetup({
 	beforeSend: (xhr, settings) => {
@@ -12,14 +13,24 @@ $.ajaxSetup({
 		}
 	}
 });
-const ajaxQuestionRating = () => $.ajax({
+
+const ajax = data => $.ajax({
+	data: data,
 	error: response => {
-		alert("Во время AJAX-запроса произошла ошибка");
-		console.log(response);
+		alert("Ошибка. " + response.responseText);
+		console.log(response.responseText);
 	},
-	data: $questionRatingForm.serialize(),
 	type: "POST"
 });
+const ajaxQuestionRating = () => $.ajax({
+	data: $questionRatingForm.serialize(),
+	error: response => {
+		alert("Ошибка. " + response.responseText);
+		console.log(response.responseText);
+	},
+	type: "POST"
+});
+
 if ($questionRatingRated.prop("checked")) {
 	if ($questionRatingLike.prop("checked")) {
 		$questionRatingPictureLike.toggleClass("text-success");
@@ -27,6 +38,7 @@ if ($questionRatingRated.prop("checked")) {
 		$questionRatingPictureDislike.toggleClass("text-danger");
 	}
 }
+
 $questionRatingPictureDislike.on("click", () => {
 	$questionRatingPictureDislike.toggleClass("text-danger");
 	const rating = parseInt($questionRating.text(), 10);
@@ -94,30 +106,23 @@ $questionRatingPictureLike.on("click", () => {
 	$questionRatingRated.prop("checked", ratingIsNew);
 });
 
-/*$("#ajax_comment_to_question").submit(event => {
-	event.preventDefault();
-}).on("submit", () => {
-	$.ajax({
-		error: response => alert("error: " + response.responseJSON.error),
-		data: $("#ajax_comment_to_question").serialize(),
-		success: data => {
-			ajax_comment_to_question(data.profile_url, data.avatar_url, data.author, data.text);
-		},
-		type: 'POST',
-		url: '/ajax/comment_to_question'
-	});
-});
-const ajax_comment_to_question = (profile_url, avatar_url, author, text) => {
-	$("#comments_to_question").prepend("<div class=\"media mb-4\">\n" +
-		"\t<a href=\"" + profile_url + "\">\n" +
-		"\t\t<img class=\"d-flex mr-3 rounded-circle\" src=\"" + avatar_url + "\" style=\"width: 64px; height: 64px;\" alt=\"Аватар пользователя\">\n" +
+const commentFormOnSubmit = ($commentForm, $comments) => {
+	const avatarUrl = $commentForm.data("avatar-url");
+	const profileName = $commentForm.data("profile-name");
+	const profileUrl = $commentForm.data("profile-url");
+	const id = "comment_" + new Date().getTime();
+	$comments.prepend("<div class='media mb-4' id='" + id + "'>\n" +
+		"\t<a href='" + profileUrl + "'>\n" +
+		"\t\t<img alt='Аватар пользователя' class='d-flex mr-3 rounded-circle avatar64' src='" + avatarUrl + "'>\n" +
 		"\t</a>\n" +
-		"\t<div class=\"media-body\">\n" +
-		"\t\t<h5 class=\"mt-0\"><a href=\"" + profile_url + "\">" + author + "</a></h5>\n" +
-		"\t\t" + text + "\n" +
+		"\t<div class='media-body'>\n" +
+		"\t\t<h5 class='mt-0'><a href='" + profileUrl + "'>" + profileName + "</a></h5>\n" +
+		"\t\t" + $commentForm.find("textarea[name='text']").val() + "\n" +
 		"\t</div>\n" +
 		"</div>");
-}*/
-			/*$('html,body').animate({
-				scrollTop: $("#answer_" + data.answer_id).offset().top
-			}, 'slow');*/
+	ajax($commentForm.serialize());
+	$commentForm.trigger("reset");
+	$("html,body").animate({
+		scrollTop: $("#" + id).offset().top - 66 //в будущем переделать: 1) выборка по id; 2) магические числа
+	}, 500);
+};
