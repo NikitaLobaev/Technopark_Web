@@ -139,6 +139,12 @@ class Answer(models.Model):
     
     def get_comments(self):
         return CommentToAnswer.objects.get_by_answer(answer=self)
+    
+    def recount_rating(self):  # TODO: возможно, этот запрос можно оптимизировать
+        likes = AnswerLike.objects.filter(obj=self, like=True).count()
+        dislikes = AnswerLike.objects.filter(obj=self, like=False).count()
+        self.rating = likes - dislikes
+        self.save()
 
 
 class AcceptedAnswersManager(models.Manager):

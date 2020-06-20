@@ -22,14 +22,6 @@ const ajax = data => $.ajax({
 	},
 	type: "POST"
 });
-const ajaxQuestionRating = () => $.ajax({
-	data: $questionRatingForm.serialize(),
-	error: response => {
-		alert("Ошибка. " + response.responseText);
-		console.log(response.responseText);
-	},
-	type: "POST"
-});
 
 if ($questionRatingRated.prop("checked")) {
 	if ($questionRatingLike.prop("checked")) {
@@ -69,7 +61,7 @@ $questionRatingPictureDislike.on("click", () => {
 		ratingIsNew = false;
 	}
 	$questionRatingLike.prop("checked", false);
-	ajaxQuestionRating();
+	ajax($questionRatingForm.serialize());
 	$questionRatingRated.prop("checked", ratingIsNew);
 });
 $questionRatingPictureLike.on("click", () => {
@@ -102,7 +94,7 @@ $questionRatingPictureLike.on("click", () => {
 		ratingIsNew = false;
 	}
 	$questionRatingLike.prop("checked", true);
-	ajaxQuestionRating();
+	ajax($questionRatingForm.serialize());
 	$questionRatingRated.prop("checked", ratingIsNew);
 });
 

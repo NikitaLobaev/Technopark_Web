@@ -10,7 +10,8 @@ from django.core.cache import cache
 from forum.forms import SignupForm, LoginForm, EditProfileForm, EditPasswordForm, UsersPaginationForm, \
     AskQuestionForm, QuestionsPaginationForm, AnswerTheQuestionForm, QuestionRatingForm, CommentToQuestionForm, \
     CommentToAnswerForm
-from forum.models import User, Question, QuestionTag, Answer, QuestionLike, CommentToQuestion, CommentToAnswer
+from forum.models import User, Question, QuestionTag, Answer, QuestionLike, CommentToQuestion, CommentToAnswer, \
+    AnswerLike
 
 
 class BaseView(View):  # TODO: sort all imports!!!

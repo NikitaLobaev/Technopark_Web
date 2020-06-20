@@ -121,6 +121,15 @@ class QuestionRatingForm(forms.ModelForm):
 
 
 class AnswerRatingForm(QuestionRatingForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['like'].widget.attrs = {
+            'id': 'answer_rating_like'
+        }
+        self.fields['rated'].widget.attrs = {
+            'id': 'answer_rating_rated'
+        }
+    
     class Meta:
         fields = ('like',)
         model = AnswerLike
@@ -147,7 +156,6 @@ class CommentToQuestionForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['text'].widget.attrs = {
             'class': 'form-control',
-            'id': 'question_comment_text',
             'rows': '3'
         }
     

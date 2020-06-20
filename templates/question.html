@@ -98,7 +98,12 @@
           <p class="card-text">{{ answer }}</p>
         </div>
         <div class="card-footer text-muted">Ответ дан {{ answer.pub_date }} пользователем&nbsp;
-          <a href="{% url 'forum:user' answer.author.id %}">{{ answer.author }}</a></div>
+          <a href="{% url 'forum:user' answer.author.id %}">{{ answer.author }}</a>
+          <a href="{% url 'forum:user' question.author.id %}">
+            <img alt="Аватар пользователя" class="ml-2 rounded-circle avatar32"
+                 src="{{ answer.author.get_avatar_url }}">
+          </a>
+        </div>
       </div>
       <div id="answer_{{ answer.id }}_comments">
         {% for comment in answer.get_comments %}
