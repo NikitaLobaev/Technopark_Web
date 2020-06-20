@@ -3,7 +3,7 @@ from django.contrib.auth.forms import (AuthenticationForm, PasswordChangeForm,
                                        UserCreationForm)
 
 from forum.models import (Answer, CommentToQuestion, Question, QuestionLike,
-                          User, CommentToAnswer)
+                          User, CommentToAnswer, AnswerLike)
 
 
 class SignupForm(UserCreationForm):
@@ -19,7 +19,7 @@ class SignupForm(UserCreationForm):
         }
     
     class Meta:
-        fields = ['avatar', 'email', 'username', 'first_name', 'last_name']
+        fields = ('avatar', 'email', 'username', 'first_name', 'last_name')
         labels = {
             'avatar': 'Аватар',
             'email': 'Email',
@@ -39,7 +39,7 @@ class LoginForm(AuthenticationForm):
         }
     
     class Meta:
-        fields = ['username', 'password']
+        fields = ('username', 'password')
         labels = {
             'password': 'Пароль',
             'username': 'Логин'
@@ -79,7 +79,7 @@ class AskQuestionForm(forms.ModelForm):
         }
     
     class Meta:
-        fields = ['title', 'text', 'tags']
+        fields = ('title', 'text', 'tags')
         labels = {
             'tags': 'Теги',
             'text': 'Тело',
@@ -107,29 +107,23 @@ class QuestionRatingForm(forms.ModelForm):
     def save(self, commit=True):
         if self.cleaned_data['rated']:
             if 'like' in self.changed_data:  # заменить лайк/дизлайк на дизлайк/лайк
-                question_like = super().save()
-                if question_like.like:
-                    question_like.question.rating += 2
-                else:
-                    question_like.question.rating -= 2
-                question_like.question.save()
-                return question_like
+                like = super().save()
+                like.obj.recount_rating()
+                return like
             else:  # убрать лайк/дизлайк
                 self.instance.delete()
-                if self.instance.like:
-                    self.instance.question.rating -= 1
-                else:
-                    self.instance.question.rating += 1
-                self.instance.question.save()
+                self.instance.obj.recount_rating()
                 return None
         else:  # поставить новый лайк/дизлайк
-            question_like = super().save()
-            if question_like.like:
-                question_like.question.rating += 1
-            else:
-                question_like.question.rating -= 1
-            question_like.question.save()
-            return question_like
+            like = super().save()
+            like.obj.recount_rating()
+            return like
+
+
+class AnswerRatingForm(QuestionRatingForm):
+    class Meta:
+        fields = ('like',)
+        model = AnswerLike
 
 
 class AnswerTheQuestionForm(forms.ModelForm):
@@ -141,7 +135,7 @@ class AnswerTheQuestionForm(forms.ModelForm):
         }
     
     class Meta:
-        fields = ['text']
+        fields = ('text',)
         labels = {
             'text': 'Ответ'
         }
@@ -158,13 +152,13 @@ class CommentToQuestionForm(forms.ModelForm):
         }
     
     class Meta:
-        fields = ['text']
+        fields = ('text',)
         model = CommentToQuestion
 
 
 class CommentToAnswerForm(CommentToQuestionForm):
     class Meta:
-        fields = ['text']
+        fields = ('text',)
         model = CommentToAnswer
 
 

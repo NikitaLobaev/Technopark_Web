@@ -9,7 +9,6 @@ urlpatterns = [
     path('', views.PaginationView.as_view(), name='index'),
     path('signup/', views.SignupView.as_view(), name='signup'),
     path('login/', views.LoginView.as_view(), name='login'),
-    # path('profile/', login_required(views.UserView.as_view()), name='profile'),
     path('logout/', login_required(views.LogoutView.as_view()), name='logout'),
     path('user/<int:id>/', login_required(views.UserView.as_view()), name='user'),
     path('users/', views.UsersView.as_view(), name='users'),

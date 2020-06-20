@@ -165,23 +165,28 @@ class QuestionView(PaginationView):
         kwargs['comment_to_question_form'] = CommentToQuestionForm()
         kwargs['pagination'] = question.get_answers()
         kwargs['question'] = question
-        try:
-            question_like = QuestionLike.objects.get(author=request.user, question_id=id_)
-            kwargs['question_rating_form'] = QuestionRatingForm(initial={
-                'rated': True
-            }, instance=question_like)
-        except QuestionLike.DoesNotExist:
+        if request.user.is_authenticated:
+            try:
+                question_like = QuestionLike.objects.get(author=request.user, obj_id=id_)
+                kwargs['question_rating_form'] = QuestionRatingForm(initial={
+                    'rated': True
+                }, instance=question_like)
+            except QuestionLike.DoesNotExist:
+                kwargs['question_rating_form'] = QuestionRatingForm()
+        else:
             kwargs['question_rating_form'] = QuestionRatingForm()
         return super().get(request, **kwargs)
     
     def post(self, request, **kwargs):
         id_ = kwargs['id']
-        if not request.user.is_authenticated:
-            response = redirect('forum:login')
-            response['Location'] += '?next=' + reverse('forum:question', id_)
-            return response
         if request.is_ajax():
             return ajax_question(request, **kwargs)
+        if not request.user.is_authenticated:
+            response = redirect('forum:login')
+            response['Location'] += '?next=' + reverse('forum:question', kwargs={
+                'id': id_
+            })
+            return response
         question = get_object_or_404(Question, id=id_)
         answer_form = AnswerTheQuestionForm(data=request.POST, instance=Answer(author=request.user, question_id=id_))
         if answer_form.is_valid():
@@ -211,6 +216,8 @@ class TagQuestionsView(PaginationView):
 
 
 def ajax_question(request, **kwargs):
+    if not request.user.is_authenticated:
+        return HttpResponseForbidden('Не авторизован.')
     id_ = kwargs['id']
     if request.POST.get('text'):
         if request.POST.get('answer_id'):  # комментарий к ответу
@@ -235,16 +242,16 @@ def ajax_question(request, **kwargs):
         try:
             question_rating_form = QuestionRatingForm(data=request.POST, initial={
                 'rated': True
-            }, instance=QuestionLike.objects.get(author=request.user, question_id=id_))
+            }, instance=QuestionLike.objects.get(author=request.user, obj_id=id_))
         except QuestionLike.DoesNotExist:
             question_rating_form = QuestionRatingForm(
                 data=request.POST,
-                instance=QuestionLike(author=request.user, question_id=id_))
+                instance=QuestionLike(author=request.user, obj_id=id_))
         if question_rating_form.is_valid():
             try:
                 question_rating_form.save()
             except:
-                return HttpResponseForbidden('Хрен тебе, а не лайк!')
+                return HttpResponseForbidden('Возможная попытка спама или ошибка на сервере.')
         else:
             return HttpResponseForbidden(question_rating_form.errors.as_text())
     return HttpResponse()

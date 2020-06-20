@@ -31,15 +31,15 @@ class User(AbstractUser):
     username = models.CharField(max_length=30, unique=True)
     
     class Meta:
-        ordering = ['-answers_count', '-questions_count']
+        ordering = ('-answers_count', '-questions_count')
     
     def __str__(self):
         return self.username
     
     def answer_added(self, question):
-        question.answers_count += 1
+        question.answers_count = Answer.objects.filter(question=question).count()
         question.save()
-        self.answers_count += 1
+        self.answers_count = Answer.objects.filter(author=self).count()
         self.save()
     
     def get_avatar_url(self):
@@ -49,7 +49,7 @@ class User(AbstractUser):
             return static('default_avatar.png')
     
     def question_added(self):
-        self.questions_count += 1
+        self.questions_count = Question.objects.filter(author=self).count()
         self.save()
 
 
@@ -65,7 +65,7 @@ class QuestionTag(models.Model):
     name = models.CharField(max_length=32, primary_key=True)
     
     class Meta:
-        ordering = ['name']
+        ordering = ('name',)
     
     def __str__(self):
         return self.name
@@ -90,7 +90,7 @@ class Question(models.Model):
     title = models.CharField(max_length=256)
     
     class Meta:
-        ordering = ['-pub_date']
+        ordering = ('-pub_date',)
     
     def get_title_short(self):
         if len(self.title) > 64:
@@ -110,25 +110,11 @@ class Question(models.Model):
     def get_answers(self):
         return Answer.objects.get_by_question(question=self)
     
-    # def was_rated(self, user):
-    #     return QuestionLike.objects.filter(author=user, question=self)
-    #
-    # def rating_add(self, user, like):
-    #     like = QuestionLike.objects.create(author=user, like=like, question=self)
-    #     if like:
-    #         self.rating += 1
-    #     else:
-    #         self.rating -= 1
-    #     self.save()
-    #
-    # def rating_remove(self, user):
-    #     like = QuestionLike.objects.get(author=user, question=self)
-    #     if like.like:
-    #         self.rating -= 1
-    #     else:
-    #         self.rating += 1
-    #     like.delete()
-    #     self.save()
+    def recount_rating(self):  # TODO: возможно, этот запрос можно оптимизировать
+        likes = QuestionLike.objects.filter(obj=self, like=True).count()
+        dislikes = QuestionLike.objects.filter(obj=self, like=False).count()
+        self.rating = likes - dislikes
+        self.save()
 
 
 class AnswerManager(models.Manager):
@@ -146,7 +132,7 @@ class Answer(models.Model):
     text = models.TextField()
     
     class Meta:
-        ordering = ['-rating']
+        ordering = ('-rating',)
     
     def __str__(self):
         return self.text
@@ -175,42 +161,21 @@ class AcceptedAnswers(models.Model):
     answer = models.OneToOneField(Answer, on_delete=models.CASCADE)
 
 
-class LikeManager(models.Manager):
-    # def get_or_none(self, **kwargs):
-    #     try:
-    #         return self.get(**kwargs)
-    #     except (QuestionLike.DoesNotExist, AnswerLike.DoesNotExist):
-    #         return None
-    pass
-
-
 class Like(models.Model):
-    objects = LikeManager()
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     like = models.BooleanField(default=True)
     
     class Meta:
         abstract = True
-    
-    def __int__(self):
-        if self.like:
-            return 1
-        else:
-            return -1
+        unique_together = ('author', 'obj')
 
 
 class QuestionLike(Like):
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    
-    class Meta:
-        unique_together = ('author', 'like', 'question')
+    obj = models.ForeignKey(Question, on_delete=models.CASCADE)
 
 
 class AnswerLike(Like):
-    answer = models.ForeignKey(Answer, on_delete=models.CASCADE)
-    
-    class Meta:
-        unique_together = ('author', 'like', 'answer')
+    obj = models.ForeignKey(Answer, on_delete=models.CASCADE)
 
 
 class Comment(models.Model):
@@ -220,7 +185,7 @@ class Comment(models.Model):
     
     class Meta:
         abstract = True
-        ordering = ['-pub_date']
+        ordering = ('-pub_date',)
     
     def __str__(self):
         return self.text
@@ -236,7 +201,7 @@ class CommentToQuestion(Comment):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     
     class Meta:
-        ordering = ['-pub_date']
+        ordering = ('-pub_date',)
 
 
 class CommentToAnswerManager(models.Manager):
@@ -249,4 +214,4 @@ class CommentToAnswer(Comment):
     answer = models.ForeignKey(Answer, on_delete=models.CASCADE)
     
     class Meta:
-        ordering = ['-pub_date']
+        ordering = ('-pub_date',)

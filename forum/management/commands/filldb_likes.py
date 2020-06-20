@@ -21,9 +21,9 @@ class Command(BaseCommand):
         if answers_max_count < 0:
             raise CommandError('Параметр answers_max_count должен быть больше или равен 0.')
         users = User.objects.all()
-        for state in [[Question.objects.all(), QuestionLike, min(questions_max_count, len(users)) + 1],
-                      [Answer.objects.all(), AnswerLike, min(questions_max_count, len(users)) + 1]]:
-            for object_ in state[0]:
+        for state in ((Question.objects.all(), QuestionLike, min(questions_max_count, len(users)) + 1),
+                      (Answer.objects.all(), AnswerLike, min(questions_max_count, len(users)) + 1)):
+            for obj in state[0]:
                 rating = 0
                 for i in random.sample(range(len(users)), randrange(0, state[2])):
                     like = randrange(0, 2) == 1
@@ -32,9 +32,9 @@ class Command(BaseCommand):
                     else:
                         rating -= 1
                     if state[1] == QuestionLike:
-                        QuestionLike.objects.create(author=users[i], like=like, question=object_)
+                        QuestionLike.objects.create(author=users[i], like=like, obj=obj)
                     else:
-                        AnswerLike.objects.create(author=users[i], like=like, answer=object_)
-                object_.rating = rating
-                object_.save()
+                        AnswerLike.objects.create(author=users[i], like=like, obj=obj)
+                obj.rating = rating
+                obj.save()
         print('filldb_likes: OK')

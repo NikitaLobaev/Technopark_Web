@@ -49,41 +49,43 @@
       </div>
     {% endfor %}
   </div>
-  <div class="card">
-    <form class="form-horizontal" data-avatar-url="{{ request.user.get_avatar_url }}"
-          data-profile-name="{{ request.user }}" data-profile-url="{% url 'forum:user' request.user.id %}"
-          onsubmit="commentFormOnSubmit($(this), $('#question_comments')); return false;">
-      {{ comment_to_question_form.question }}
-      <h5 class="card-header">
-        <label for="{{ comment_to_question_form.text.id_for_label }}">Оставить комментарий к вопросу:</label>
-      </h5>
-      <div class="card-body">
-        {{ comment_to_question_form.non_field_errors }}
-        {{ comment_to_question_form.text.errors }}
-        <div class="form-group">
-          {{ comment_to_question_form.text }}
+  {% if request.user.is_authenticated %}
+    <div class="card">
+      <form class="form-horizontal" data-avatar-url="{{ request.user.get_avatar_url }}"
+            data-profile-name="{{ request.user }}" data-profile-url="{% url 'forum:user' request.user.id %}"
+            onsubmit="commentFormOnSubmit($(this), $('#question_comments')); return false;">
+        {{ comment_to_question_form.question }}
+        <h5 class="card-header">
+          <label for="{{ comment_to_question_form.text.id_for_label }}">Оставить комментарий к вопросу:</label>
+        </h5>
+        <div class="card-body">
+          {{ comment_to_question_form.non_field_errors }}
+          {{ comment_to_question_form.text.errors }}
+          <div class="form-group">
+            {{ comment_to_question_form.text }}
+          </div>
+          <button class="btn btn-primary">Отправить</button>
         </div>
-        <button class="btn btn-primary">Отправить</button>
-      </div>
-    </form>
-  </div>
-  <div class="card mt-3">
-    <form class="form-horizontal" method="post">
-      {% csrf_token %}
-      {{ answer_form.question }}
-      <h5 class="card-header">
-        <label for="{{ answer_form.text.id_for_label }}">Ответить на вопрос:</label>
-      </h5>
-      <div class="card-body">
-        {{ answer_form.non_field_errors }}
-        {{ answer_form.text.errors }}
-        <div class="form-group">
-          {{ answer_form.text }}
+      </form>
+    </div>
+    <div class="card mt-3">
+      <form class="form-horizontal" method="post">
+        {% csrf_token %}
+        {{ answer_form.question }}
+        <h5 class="card-header">
+          <label for="{{ answer_form.text.id_for_label }}">Ответить на вопрос:</label>
+        </h5>
+        <div class="card-body">
+          {{ answer_form.non_field_errors }}
+          {{ answer_form.text.errors }}
+          <div class="form-group">
+            {{ answer_form.text }}
+          </div>
+          <button class="btn btn-primary">Отправить</button>
         </div>
-        <button class="btn btn-primary">Отправить</button>
-      </div>
-    </form>
-  </div>
+      </form>
+    </div>
+  {% endif %}
   {% if question.answers_count > 0 %}
     <h3 class="mt-4">Ответы ({{ question.answers_count }})</h3>
     <form class="form-horizontal" id="pagination_form">
@@ -112,24 +114,26 @@
           </div>
         {% endfor %}
       </div>
-      <div class="card">
-        <form class="form-horizontal" data-avatar-url="{{ request.user.get_avatar_url }}"
-              data-profile-name="{{ request.user }}" data-profile-url="{% url 'forum:user' request.user.id %}"
-              onsubmit="commentFormOnSubmit($(this), $('#answer_{{ answer.id }}_comments')); return false;">
-          <input name="answer_id" type="hidden" value="{{ answer.id }}">
-          <h5 class="card-header">
-            <label for="{{ comment_to_answer_form.text.id_for_label }}">Оставить комментарий к ответу:</label>
-          </h5>
-          <div class="card-body">
-            {{ comment_to_answer_form.non_field_errors }}
-            {{ comment_to_answer_form.text.errors }}
-            <div class="form-group">
-              {{ comment_to_answer_form.text }}
+      {% if request.user.is_authenticated %}
+        <div class="card">
+          <form class="form-horizontal" data-avatar-url="{{ request.user.get_avatar_url }}"
+                data-profile-name="{{ request.user }}" data-profile-url="{% url 'forum:user' request.user.id %}"
+                onsubmit="commentFormOnSubmit($(this), $('#answer_{{ answer.id }}_comments')); return false;">
+            <input name="answer_id" type="hidden" value="{{ answer.id }}">
+            <h5 class="card-header">
+              <label for="{{ comment_to_answer_form.text.id_for_label }}">Оставить комментарий к ответу:</label>
+            </h5>
+            <div class="card-body">
+              {{ comment_to_answer_form.non_field_errors }}
+              {{ comment_to_answer_form.text.errors }}
+              <div class="form-group">
+                {{ comment_to_answer_form.text }}
+              </div>
+              <button class="btn btn-primary">Отправить</button>
             </div>
-            <button class="btn btn-primary">Отправить</button>
-          </div>
-        </form>
-      </div>
+          </form>
+        </div>
+      {% endif %}
       <hr>
     {% endfor %}
     {% include 'pagination.html' %}
