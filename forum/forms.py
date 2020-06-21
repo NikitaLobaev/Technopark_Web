@@ -2,8 +2,8 @@ from django import forms
 from django.contrib.auth.forms import (AuthenticationForm, PasswordChangeForm,
                                        UserCreationForm)
 
-from forum.models import (Answer, CommentToQuestion, Question, QuestionLike,
-                          User, CommentToAnswer, AnswerLike)
+from forum.models import (Answer, AnswerLike, CommentToAnswer,
+                          CommentToQuestion, Question, QuestionLike, User)
 
 
 class SignupForm(UserCreationForm):

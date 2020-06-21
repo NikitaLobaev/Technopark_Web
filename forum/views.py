@@ -1,20 +1,23 @@
-from django.contrib.auth import login, authenticate, logout
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.http import HttpResponseNotFound, HttpResponseForbidden, HttpResponse
-from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth import authenticate, login, logout
+from django.core.cache import cache
+from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
+from django.http import (HttpResponse, HttpResponseForbidden,
+                         HttpResponseNotFound)
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.views import View
 from django.views.generic import RedirectView
-from django.core.cache import cache
 
-from forum.forms import SignupForm, LoginForm, EditProfileForm, EditPasswordForm, UsersPaginationForm, \
-    AskQuestionForm, QuestionsPaginationForm, AnswerTheQuestionForm, QuestionRatingForm, CommentToQuestionForm, \
-    CommentToAnswerForm
-from forum.models import User, Question, QuestionTag, Answer, QuestionLike, CommentToQuestion, CommentToAnswer, \
-    AnswerLike
+from forum.forms import (AnswerTheQuestionForm, AskQuestionForm,
+                         CommentToAnswerForm, CommentToQuestionForm,
+                         EditPasswordForm, EditProfileForm, LoginForm,
+                         QuestionRatingForm, QuestionsPaginationForm,
+                         SignupForm, UsersPaginationForm)
+from forum.models import (Answer, CommentToAnswer, CommentToQuestion, Question,
+                          QuestionLike, QuestionTag, User)
 
 
-class BaseView(View):  # TODO: sort all imports!!!
+class BaseView(View):
     template_name = 'index.html'
     
     def get(self, request, **kwargs):
@@ -252,7 +255,7 @@ def ajax_question(request, **kwargs):
             try:
                 question_rating_form.save()
             except:
-                return HttpResponseForbidden('Возможная попытка спама или ошибка на сервере.')
+                return HttpResponseForbidden('Обнаружена попытка спама или ошибка на сервере.')
         else:
             return HttpResponseForbidden(question_rating_form.errors.as_text())
     return HttpResponse()
